@@ -544,6 +544,12 @@ img {
   background: var(--glow);
   color: var(--accent);
   font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.feature-icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .feature-card h3 {
@@ -558,6 +564,84 @@ img {
   color: var(--text-secondary);
   font-size: 0.9rem;
   line-height: 1.65;
+}
+
+/* ── Templates ── */
+.templates {
+  padding: 80px 0;
+  border-top: 1px solid var(--border);
+}
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.template-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px 24px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.template-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+.template-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.template-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.role-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--elevated);
+  border: 1px solid var(--border-strong);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-family: var(--mono);
+  letter-spacing: 0.01em;
+}
+
+.template-desc {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.65;
+  flex: 1;
+}
+
+.template-cmd {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.template-cmd code {
+  font: inherit;
 }
 
 /* ── Workflow ── */
@@ -747,6 +831,11 @@ img {
     gap: 12px;
   }
 
+  .templates-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
   .step {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -801,6 +890,7 @@ img {
   }
 
   .features,
+  .templates,
   .workflow,
   .docs {
     padding: 56px 0;
