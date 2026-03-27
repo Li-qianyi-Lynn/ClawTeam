@@ -55,6 +55,7 @@ LEADER = os.environ.get("CLAWTEAM_BRIDGE_LEADER")
 
 CHANNEL_IDS: set[int] = set(BRIDGE_CHANNEL_IDS)
 _seen_ids: set[str] = set()
+_peek_warned: bool = False
 
 
 def _die(msg: str) -> None:
@@ -121,11 +122,18 @@ async def _forward_to_leader(channel: discord.abc.Messageable, author: str, body
 
 
 def _peek_human_messages() -> list[dict[str, Any]]:
+    global _peek_warned
     try:
         data = _run_clawteam_json(
             ["inbox", "peek", TEAM, "--agent", HUMAN_INBOX]
         )
-    except Exception:
+    except Exception as e:
+        if not _peek_warned:
+            print(
+                f"[poll] inbox peek 失败（队名/数据目录是否与转发时一致？）：{e}",
+                file=sys.stderr,
+            )
+            _peek_warned = True
         return []
     if not isinstance(data, dict):
         return []
@@ -191,6 +199,12 @@ class ClawTeamBridgeClient(discord.Client):
             print(f"转发前缀：{PREFIX!r}（示例：{PREFIX}帮我把登录页做了）")
         else:
             print("未设置 PREFIX：整句转发（请在源码里限制 BRIDGE_CHANNEL_IDS）")
+        print(
+            "提示：Discord 不会自动出现「猫回复」。只有 ClawTeam 里有人执行\n"
+            f"  clawteam inbox send {TEAM!r} {HUMAN_INBOX} '要给人类看的文字'\n"
+            "后，本脚本才会把内容贴回 Discord；总裁喵进程也需在跑并会发上述命令。",
+            file=sys.stderr,
+        )
 
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot:
