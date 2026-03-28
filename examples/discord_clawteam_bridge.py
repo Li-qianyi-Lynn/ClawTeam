@@ -7,10 +7,17 @@
 
 依赖：pip install "discord.py>=2.3"
 
-终端只需 export 这三项：
+终端必须 export：
   DISCORD_BOT_TOKEN
   CLAWTEAM_BRIDGE_TEAM
   CLAWTEAM_BRIDGE_LEADER
+
+**强烈建议**再设（桥接里跑的 `clawteam` 与你在 SSH 里手敲的必须指向同一目录，否则「已发给」但猫永远收不到）：
+  export CLAWTEAM_DATA_DIR="$HOME/.clawteam"
+
+若桥接用 systemd，在 unit 里写同一绝对路径，例如：
+  Environment=CLAWTEAM_DATA_DIR=/home/azureuser/.clawteam
+
 其余参数在下方「常量」里改源码即可。
 """
 
@@ -22,6 +29,7 @@ import os
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 from typing import Any
 
 import discord
@@ -72,6 +80,27 @@ def _check_env() -> None:
         _die("未设置 CLAWTEAM_BRIDGE_LEADER。")
 
 
+def _effective_data_dir() -> Path:
+    """与 clawteam 一致：优先环境变量 CLAWTEAM_DATA_DIR，否则 ~/.clawteam。"""
+    raw = os.environ.get("CLAWTEAM_DATA_DIR", "").strip()
+    if raw:
+        return Path(os.path.expanduser(raw)).resolve()
+    return Path.home() / ".clawteam"
+
+
+def _clawteam_subprocess_env() -> dict[str, str]:
+    """子进程环境：保证写进与当前检查命令相同的 data 目录。"""
+    env = os.environ.copy()
+    # 未设置时显式写入默认路径，避免 systemd 等服务环境下 HOME 与交互 shell 不一致
+    if not env.get("CLAWTEAM_DATA_DIR", "").strip():
+        env["CLAWTEAM_DATA_DIR"] = str(Path.home() / ".clawteam")
+    return env
+
+
+def _team_config_path() -> Path:
+    return _effective_data_dir() / "teams" / (TEAM or "") / "config.json"
+
+
 def _leader_inbox_target() -> str:
     """与 `clawteam inbox send` 一致：领队若有 user，真实目录为 ``user_zong-cai-miao``。"""
     try:
@@ -96,7 +125,7 @@ def _run_clawteam_json(args: list[str]) -> dict[str, Any] | list[Any] | None:
         cmd,
         capture_output=True,
         text=True,
-        env=os.environ.copy(),
+        env=_clawteam_subprocess_env(),
     )
     out = (proc.stdout or "").strip()
     err = (proc.stderr or "").strip()
@@ -107,6 +136,29 @@ def _run_clawteam_json(args: list[str]) -> dict[str, Any] | list[Any] | None:
     if not out:
         return None
     return json.loads(out)
+
+
+def _leader_peek_messages() -> list[dict[str, Any]]:
+    try:
+        data = _run_clawteam_json(
+            ["inbox", "peek", TEAM, "--agent", _leader_inbox_target()]
+        )
+    except Exception:
+        return []
+    if not isinstance(data, dict):
+        return []
+    raw = data.get("messages") or []
+    return [m for m in raw if isinstance(m, dict)]
+
+
+def _leader_inbox_has_line(line: str) -> bool:
+    """转发后校验：领队收件箱里是否能看到本条（防止写进另一套 data dir）。"""
+    needle = line[:120] if len(line) > 120 else line
+    for msg in _leader_peek_messages():
+        content = str(msg.get("content") or "")
+        if needle in content or line in content:
+            return True
+    return False
 
 
 async def _forward_to_leader(channel: discord.abc.Messageable, author: str, body: str) -> None:
@@ -132,7 +184,24 @@ async def _forward_to_leader(channel: discord.abc.Messageable, author: str, body
     except Exception as e:
         await channel.send(f"转发到 ClawTeam 失败：`{e}`")
         return
+
+    def _verify() -> bool:
+        return _leader_inbox_has_line(line)
+
+    try:
+        ok = await loop.run_in_executor(None, _verify)
+    except Exception:
+        ok = False
+
+    data_dir = _effective_data_dir()
     await channel.send(f"已发给 **{LEADER}** 的 inbox（团队 `{TEAM}`）。")
+    if not ok:
+        await channel.send(
+            "⚠️ **校验失败**：`clawteam inbox send` 返回成功，但**在同一数据目录下** peek 领队收件箱**没看到**本条。\n"
+            f"请在本机设与桥接**相同**的目录后再试：\n"
+            f"`export CLAWTEAM_DATA_DIR={data_dir}`\n"
+            "若用 systemd 跑桥接，给 service 加上同一 `Environment=`。**你在 SSH 里 peek 时也要 export 这一行。**"
+        )
 
 
 def _peek_human_messages() -> list[dict[str, Any]]:
@@ -209,6 +278,14 @@ class ClawTeamBridgeClient(discord.Client):
 
     async def on_ready(self) -> None:
         print(f"Bridge 已登录 {self.user} | team={TEAM} leader={LEADER} human_inbox={HUMAN_INBOX}")
+        dd = _effective_data_dir()
+        print(f"[bridge] CLAWTEAM_DATA_DIR 有效路径：{dd}", file=sys.stderr)
+        tcfg = _team_config_path()
+        if not tcfg.is_file():
+            print(
+                f"[bridge] 警告：未找到团队配置 {tcfg}（队名或数据目录可能不对）",
+                file=sys.stderr,
+            )
         resolved = _leader_inbox_target()
         if resolved != LEADER:
             print(
@@ -244,6 +321,9 @@ class ClawTeamBridgeClient(discord.Client):
 
 def main() -> None:
     _check_env()
+    # 尽早统一子进程默认 data dir，与 _clawteam_subprocess_env 一致
+    if not os.environ.get("CLAWTEAM_DATA_DIR", "").strip():
+        os.environ["CLAWTEAM_DATA_DIR"] = str(Path.home() / ".clawteam")
     if not shutil.which(CLAWTEAM_CMD):
         _die(f"找不到 {CLAWTEAM_CMD!r}：请安装 ClawTeam 并加入 PATH。")
 
