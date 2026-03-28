@@ -53,6 +53,22 @@ class BoardHandler(BaseHTTPRequestHandler):
 
         if path == "/" or path == "/index.html":
             self._serve_static("index.html", "text/html")
+        elif path == "/costs" or path == "/costs.html":
+            self._serve_static("costs.html", "text/html")
+        elif path == "/api/costs/summary":
+            self._serve_costs_summary()
+        elif path == "/api/costs/by-agent":
+            self._serve_costs_by_agent()
+        elif path == "/api/costs/by-model":
+            self._serve_costs_by_model()
+        elif path == "/api/costs/by-team":
+            self._serve_costs_by_team()
+        elif path == "/api/costs/timeline":
+            self._serve_costs_timeline()
+        elif path == "/api/costs/events":
+            self._serve_costs_events()
+        elif path == "/api/costs/sync":
+            self._serve_costs_sync()
         elif path == "/api/overview":
             self._serve_json(self.collector.collect_overview())
         elif path.startswith("/api/team/"):
@@ -122,6 +138,44 @@ class BoardHandler(BaseHTTPRequestHandler):
                     self.send_error(400, str(e))
                 return
         self.send_error(404)
+
+    def _parse_team_param(self) -> str | None:
+        query = parse_qs(urlparse(self.path).query)
+        team = query.get("team", [""])[0]
+        return team or None
+
+    def _serve_costs_summary(self):
+        from clawteam.board.cost_db import get_summary
+        self._serve_json(get_summary(self._parse_team_param()))
+
+    def _serve_costs_by_agent(self):
+        from clawteam.board.cost_db import get_by_agent
+        self._serve_json(get_by_agent(self._parse_team_param()))
+
+    def _serve_costs_by_model(self):
+        from clawteam.board.cost_db import get_by_model
+        self._serve_json(get_by_model(self._parse_team_param()))
+
+    def _serve_costs_by_team(self):
+        from clawteam.board.cost_db import get_by_team
+        self._serve_json(get_by_team())
+
+    def _serve_costs_timeline(self):
+        from clawteam.board.cost_db import get_timeline
+        query = parse_qs(urlparse(self.path).query)
+        granularity = query.get("granularity", ["hour"])[0]
+        self._serve_json(get_timeline(self._parse_team_param(), granularity))
+
+    def _serve_costs_events(self):
+        from clawteam.board.cost_db import get_recent_events
+        query = parse_qs(urlparse(self.path).query)
+        limit = int(query.get("limit", ["50"])[0])
+        self._serve_json(get_recent_events(self._parse_team_param(), limit))
+
+    def _serve_costs_sync(self):
+        from clawteam.board.cost_db import sync_all_teams
+        results = sync_all_teams()
+        self._serve_json({"synced": results, "total": sum(results.values())})
 
     def _serve_static(self, filename: str, content_type: str):
         filepath = _STATIC_DIR / filename

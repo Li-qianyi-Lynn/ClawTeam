@@ -254,6 +254,21 @@ class CostStore:
             _record_event_in_summary_cache(self.team_name, path, event)
         except Exception:
             pass
+        try:
+            from clawteam.board.cost_db import record_event as _db_record
+            _db_record(
+                team_name=self.team_name,
+                event_id=event.id,
+                agent_name=event.agent_name,
+                provider=event.provider,
+                model=event.model,
+                input_tokens=event.input_tokens,
+                output_tokens=event.output_tokens,
+                cost_cents=event.cost_cents,
+                reported_at=event.reported_at,
+            )
+        except Exception:
+            pass
         return event
 
     def list_events(self, agent_name: str = "") -> list[CostEvent]:

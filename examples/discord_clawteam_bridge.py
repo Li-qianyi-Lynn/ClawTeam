@@ -1,26 +1,37 @@
 #!/usr/bin/env python3
-"""Discord ↔ ClawTeam 多猫桥接。
+"""Discord ↔ ClawTeam 多猫桥接（多 Bot 模式）。
 
-支持 @指定猫 聊天，每只猫在 Discord 以独立身份回复：
-
-    !@美丽喵 首页做得怎么样了？
-    !@后台喵 接口写好了吗
-    !@总裁喵 进度如何？
-    !帮我看看              （不指定 → 默认发给领队）
-    !喵                    （列出所有可用的猫）
+每只猫是一个**独立的 Discord Bot**，拥有自己的名字、头像和在线状态。
+主人可以直接 @某只猫 聊天（Discord 原生 @mention）。
 
 依赖：pip install "discord.py>=2.3"
 
-终端必须 export：
-  DISCORD_BOT_TOKEN
-  CLAWTEAM_BRIDGE_TEAM
-  CLAWTEAM_BRIDGE_LEADER
+必须 export：
+  DISCORD_BOT_TOKEN          — 主桥接 bot（兜底收发）
+  CLAWTEAM_BRIDGE_TEAM       — 团队名
+  CLAWTEAM_BRIDGE_LEADER     — 领队 agent id
 
-可选：
-  DISCORD_WEBHOOK_URL  — 设置后猫回复用 webhook（每只猫有独立显示名/头像）
+每只猫独立 bot（可选，有几只配几只）：
+  CAT_TOKEN_ZONG_CAI_MIAO    — 总裁喵 bot token
+  CAT_TOKEN_MEI_LI_MIAO      — 美丽喵 bot token
+  CAT_TOKEN_HOU_TAI_MIAO     — 后台喵 bot token
+  CAT_TOKEN_JIA_GOU_MIAO     — 架构喵 bot token
+  CAT_TOKEN_PING_AN_MIAO     — 平安喵 bot token
+  CAT_TOKEN_SHU_NI_HONG      — 薯你最红喵 bot token
 
-若桥接与你的 `clawteam` CLI 不在同一台机器或 HOME，请务必设：
-  export CLAWTEAM_DATA_DIR="$HOME/.clawteam"
+其它可选：
+  DISCORD_WEBHOOK_URL        — 没有独立 bot 的猫回退用 webhook
+  CAT_AVATAR_BASE_URL        — 头像图片的公网 URL 前缀
+  CLAWTEAM_DATA_DIR          — 数据目录
+
+在 Discord Developer Portal 创建每只猫的 bot 应用：
+  1. https://discord.com/developers/applications → New Application
+  2. 名字填猫名（如「总裁喵」），上传头像（examples/avatars/ 里有）
+  3. Bot 页面 → Reset Token → 复制 token
+  4. 开启 MESSAGE CONTENT INTENT
+  5. OAuth2 → URL Generator → bot + Send Messages + Read Message History
+  6. 用生成的链接邀请 bot 到你的服务器
+  重复 6 次，每只猫一个。
 """
 
 from __future__ import annotations
@@ -37,7 +48,7 @@ from typing import Any
 import discord
 
 # ---------------------------------------------------------------------------
-# 猫猫名册（中文别名 → agent ID）
+# 猫猫名册
 # ---------------------------------------------------------------------------
 
 AGENT_ALIASES: dict[str, str] = {
@@ -52,12 +63,12 @@ AGENT_ALIASES: dict[str, str] = {
 AGENT_DISPLAY: dict[str, str] = {v: k for k, v in AGENT_ALIASES.items()}
 
 CAT_COLORS: dict[str, int] = {
-    "zong-cai-miao": 0x8B6914,  # 梨花 - 棕黄
-    "mei-li-miao":   0xE8D8C4,  # 布偶 - 奶白
-    "hou-tai-miao":  0xD2691E,  # 三花 - 橙棕
-    "jia-gou-miao":  0x2F2F2F,  # 奶牛 - 深灰
-    "ping-an-miao":  0xFFA500,  # 大橘 - 橙色
-    "shu-ni-hong":   0xDAA520,  # 金渐层 - 金色
+    "zong-cai-miao": 0x8B6914,
+    "mei-li-miao":   0xE8D8C4,
+    "hou-tai-miao":  0xD2691E,
+    "jia-gou-miao":  0x2F2F2F,
+    "ping-an-miao":  0xFFA500,
+    "shu-ni-hong":   0xDAA520,
 }
 
 CAT_BREEDS: dict[str, str] = {
@@ -69,18 +80,35 @@ CAT_BREEDS: dict[str, str] = {
     "shu-ni-hong":   "金渐层 · 文案",
 }
 
+CAT_AVATAR_FILES: dict[str, str] = {
+    "zong-cai-miao": "cat_avatar_zong-cai-miao.png",
+    "mei-li-miao":   "cat_avatar_mei-li-miao.png",
+    "hou-tai-miao":  "cat_avatar_hou-tai-miao.png",
+    "jia-gou-miao":  "cat_avatar_jia-gou-miao.png",
+    "ping-an-miao":  "cat_avatar_ping-an-miao.png",
+    "shu-ni-hong":   "cat_avatar_shu-ni-hong.png",
+}
+
+_TOKEN_ENV_MAP: dict[str, str] = {
+    "zong-cai-miao": "CAT_TOKEN_ZONG_CAI_MIAO",
+    "mei-li-miao":   "CAT_TOKEN_MEI_LI_MIAO",
+    "hou-tai-miao":  "CAT_TOKEN_HOU_TAI_MIAO",
+    "jia-gou-miao":  "CAT_TOKEN_JIA_GOU_MIAO",
+    "ping-an-miao":  "CAT_TOKEN_PING_AN_MIAO",
+    "shu-ni-hong":   "CAT_TOKEN_SHU_NI_HONG",
+}
+
 # ---------------------------------------------------------------------------
 # 常量
 # ---------------------------------------------------------------------------
 
 HUMAN_INBOX = "discord-human"
-PREFIX = "!"
 POLL_SECONDS = 5.0
 TEAM_CHAT_POLL_SECONDS = 3.0
 BRIDGE_CHANNEL_IDS: tuple[int, ...] = ()
 CLAWTEAM_CMD = "clawteam"
 AUTO_NUDGE = True
-SHOW_TEAM_CHAT = True  # 在 Discord 旁听猫猫之间的内部对话
+SHOW_TEAM_CHAT = True
 
 NUDGE_TEXT = (
     "主人刚在 Discord 发了新消息给你。"
@@ -93,8 +121,7 @@ NUDGE_TEXT = (
 # ---------------------------------------------------------------------------
 
 
-def _strip_env_wrapping_quotes(value: str | None) -> str | None:
-    """去掉队名/领队名里误带的整段引号。"""
+def _strip_quotes(value: str | None) -> str | None:
     if value is None:
         return None
     s = value.strip()
@@ -110,14 +137,28 @@ def _strip_env_wrapping_quotes(value: str | None) -> str | None:
 
 
 TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
-TEAM = _strip_env_wrapping_quotes(os.environ.get("CLAWTEAM_BRIDGE_TEAM"))
-LEADER = _strip_env_wrapping_quotes(os.environ.get("CLAWTEAM_BRIDGE_LEADER"))
+TEAM = _strip_quotes(os.environ.get("CLAWTEAM_BRIDGE_TEAM"))
+LEADER = _strip_quotes(os.environ.get("CLAWTEAM_BRIDGE_LEADER"))
 WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "")
+CAT_AVATAR_BASE_URL = os.environ.get("CAT_AVATAR_BASE_URL", "").rstrip("/")
+
+CAT_TOKENS: dict[str, str] = {}
+for _aid, _ekey in _TOKEN_ENV_MAP.items():
+    _tok = os.environ.get(_ekey, "").strip()
+    if _tok:
+        CAT_TOKENS[_aid] = _tok
 
 CHANNEL_IDS: set[int] = set(BRIDGE_CHANNEL_IDS)
 _seen_ids: set[str] = set()
 _seen_team_files: set[str] = set()
 _peek_warned: bool = False
+
+# cat bot discord user id → agent id（运行时由 on_ready 填充）
+_bot_user_to_agent: dict[int, str] = {}
+# agent id → CatBotClient（运行时填充）
+_cat_clients: dict[str, "CatBotClient"] = {}
+# 共享的回复频道 id
+_reply_channel_id: int | None = min(CHANNEL_IDS) if CHANNEL_IDS else None
 
 # ---------------------------------------------------------------------------
 # 工具函数
@@ -162,8 +203,7 @@ def _tmux_session_name() -> str:
 
 
 def _clawteam_exe() -> str:
-    path = shutil.which(CLAWTEAM_CMD)
-    return path or CLAWTEAM_CMD
+    return shutil.which(CLAWTEAM_CMD) or CLAWTEAM_CMD
 
 
 def _run_clawteam_json(args: list[str]) -> dict[str, Any] | list[Any] | None:
@@ -182,55 +222,15 @@ def _run_clawteam_json(args: list[str]) -> dict[str, Any] | list[Any] | None:
     return json.loads(out)
 
 
-# ---------------------------------------------------------------------------
-# 多猫路由
-# ---------------------------------------------------------------------------
-
-
 def _resolve_inbox_target(agent_id: str) -> str:
-    """解析 agent_id 对应的磁盘 inbox 目录名（处理 user_ 前缀）。"""
     try:
         from clawteam.team.manager import TeamManager
-
         resolved = TeamManager.resolve_inbox(TEAM or "", agent_id)
         if resolved:
             return resolved
     except Exception:
         pass
     return agent_id
-
-
-def _parse_target_and_body(body: str) -> tuple[str, str]:
-    """从消息中解析目标猫。
-
-    支持格式：
-      @总裁喵 消息内容
-      @zong-cai-miao 消息内容
-      总裁喵 消息内容        （无 @ 但以猫名开头）
-      消息内容              （默认发给领队）
-
-    返回 (agent_id, cleaned_body)。
-    """
-    # 按名字长度降序匹配，避免短名误匹配
-    for alias in sorted(AGENT_ALIASES.keys(), key=len, reverse=True):
-        pattern = f"@{alias}"
-        if pattern in body:
-            cleaned = body.replace(pattern, "", 1).strip()
-            return AGENT_ALIASES[alias], cleaned
-
-    # 无 @ 但以猫名开头
-    for alias in sorted(AGENT_ALIASES.keys(), key=len, reverse=True):
-        if body.startswith(alias):
-            cleaned = body[len(alias) :].strip().lstrip("，,：: ")
-            return AGENT_ALIASES[alias], cleaned
-
-    # 尝试 agent ID（英文 ID）
-    for agent_id in AGENT_ALIASES.values():
-        if f"@{agent_id}" in body:
-            cleaned = body.replace(f"@{agent_id}", "", 1).strip()
-            return agent_id, cleaned
-
-    return LEADER or "zong-cai-miao", body
 
 
 def _cat_display_name(agent_id: str) -> str:
@@ -243,8 +243,46 @@ def _cat_full_label(agent_id: str) -> str:
     return f"{name}（{breed}）" if breed else name
 
 
+def _cat_avatar_url(agent_id: str) -> str | None:
+    if not CAT_AVATAR_BASE_URL:
+        return None
+    filename = CAT_AVATAR_FILES.get(agent_id)
+    return f"{CAT_AVATAR_BASE_URL}/{filename}" if filename else None
+
+
 # ---------------------------------------------------------------------------
-# Nudge（向任意猫的 tmux pane 注入提示）
+# 解析 @mention → agent id
+# ---------------------------------------------------------------------------
+
+
+def _mention_to_agent(message: discord.Message) -> str | None:
+    """如果消息 @了某只猫 bot，返回对应 agent_id。"""
+    for user in message.mentions:
+        if user.id in _bot_user_to_agent:
+            return _bot_user_to_agent[user.id]
+    return None
+
+
+def _parse_text_target(body: str) -> tuple[str, str]:
+    """从文本解析目标猫（!前缀模式的兜底）。"""
+    for alias in sorted(AGENT_ALIASES.keys(), key=len, reverse=True):
+        pattern = f"@{alias}"
+        if pattern in body:
+            cleaned = body.replace(pattern, "", 1).strip()
+            return AGENT_ALIASES[alias], cleaned
+    for alias in sorted(AGENT_ALIASES.keys(), key=len, reverse=True):
+        if body.startswith(alias):
+            cleaned = body[len(alias):].strip().lstrip("，,：: ")
+            return AGENT_ALIASES[alias], cleaned
+    for agent_id in AGENT_ALIASES.values():
+        if f"@{agent_id}" in body:
+            cleaned = body.replace(f"@{agent_id}", "", 1).strip()
+            return agent_id, cleaned
+    return LEADER or "zong-cai-miao", body
+
+
+# ---------------------------------------------------------------------------
+# Nudge
 # ---------------------------------------------------------------------------
 
 
@@ -257,24 +295,15 @@ def _nudge_agent_tmux(agent_id: str) -> None:
     try:
         subprocess.run(
             ["tmux", "send-keys", "-t", target, text, "Enter"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            timeout=5,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5,
         )
-        print(
-            f"[nudge] 已向 {_cat_display_name(agent_id)} ({target}) 注入提示",
-            file=sys.stderr,
-        )
-    except FileNotFoundError:
-        print("[nudge] tmux 未安装，跳过", file=sys.stderr)
-    except subprocess.TimeoutExpired:
-        print(f"[nudge] tmux send-keys 超时 ({target})", file=sys.stderr)
-    except Exception as e:
-        print(f"[nudge] 失败：{e}", file=sys.stderr)
+        print(f"[nudge] → {_cat_display_name(agent_id)}", file=sys.stderr)
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------
-# 转发消息到指定猫
+# 转发消息到猫
 # ---------------------------------------------------------------------------
 
 
@@ -299,22 +328,96 @@ async def _forward_to_agent(
         await channel.send(f"❌ 转发失败：`{e}`")
         return
 
-    def _nudge() -> None:
-        _nudge_agent_tmux(target_agent)
-
     try:
-        await loop.run_in_executor(None, _nudge)
+        await loop.run_in_executor(None, lambda: _nudge_agent_tmux(target_agent))
     except Exception:
         pass
 
-    display = _cat_display_name(target_agent)
-    breed = CAT_BREEDS.get(target_agent, "")
-    label = f"{display}（{breed}）" if breed else display
+    label = _cat_full_label(target_agent)
     await channel.send(f"📨 已发给 **{label}**")
 
 
 # ---------------------------------------------------------------------------
-# 轮询 inbox → Discord（Embed / Webhook 双模式）
+# 发送消息到 Discord（三种模式：独立 bot → webhook → embed）
+# ---------------------------------------------------------------------------
+
+
+async def _send_as_cat_bot(agent_id: str, channel_id: int, content: str) -> bool:
+    """用猫的独立 bot token 通过 REST API 发消息。"""
+    token = CAT_TOKENS.get(agent_id)
+    if not token:
+        return False
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            headers = {
+                "Authorization": f"Bot {token}",
+                "Content-Type": "application/json",
+            }
+            resp = await session.post(
+                f"https://discord.com/api/v10/channels/{channel_id}/messages",
+                headers=headers,
+                json={"content": content[:2000]},
+            )
+            if resp.status in (200, 201):
+                return True
+            body = await resp.text()
+            print(f"[cat-bot] {_cat_display_name(agent_id)} 发送失败 {resp.status}: {body[:200]}", file=sys.stderr)
+            return False
+    except Exception as e:
+        print(f"[cat-bot] {_cat_display_name(agent_id)} 发送异常：{e}", file=sys.stderr)
+        return False
+
+
+async def _send_as_webhook(agent_id: str, content: str) -> bool:
+    """通过 Webhook 以猫的身份发消息。"""
+    if not WEBHOOK_URL:
+        return False
+    try:
+        import aiohttp
+        display = _cat_display_name(agent_id)
+        breed = CAT_BREEDS.get(agent_id, "")
+        username = f"{display}" + (f"（{breed}）" if breed else "")
+        avatar = _cat_avatar_url(agent_id)
+        async with aiohttp.ClientSession() as session:
+            webhook = discord.Webhook.from_url(WEBHOOK_URL, session=session)
+            await webhook.send(content[:1900], username=username[:80], avatar_url=avatar)
+        return True
+    except Exception as e:
+        print(f"[webhook] 发送失败：{e}", file=sys.stderr)
+        return False
+
+
+def _make_cat_embed(agent_id: str, content: str) -> discord.Embed:
+    color = CAT_COLORS.get(agent_id, 0x888888)
+    embed = discord.Embed(description=content[:4000], color=color)
+    avatar = _cat_avatar_url(agent_id)
+    embed.set_author(name=f"🐱 {_cat_full_label(agent_id)}", icon_url=avatar)
+    if avatar:
+        embed.set_thumbnail(url=avatar)
+    return embed
+
+
+async def _send_cat_message(
+    agent_id: str, channel_id: int, content: str, fallback_client: discord.Client
+) -> None:
+    """按优先级尝试发消息：独立 bot → webhook → embed。"""
+    if await _send_as_cat_bot(agent_id, channel_id, content):
+        return
+    if await _send_as_webhook(agent_id, content):
+        return
+    ch = fallback_client.get_channel(channel_id)
+    if ch is None:
+        try:
+            ch = await fallback_client.fetch_channel(channel_id)
+        except Exception:
+            return
+    if isinstance(ch, (discord.TextChannel, discord.Thread)):
+        await ch.send(embed=_make_cat_embed(agent_id, content))
+
+
+# ---------------------------------------------------------------------------
+# 轮询 inbox → Discord
 # ---------------------------------------------------------------------------
 
 
@@ -331,42 +434,11 @@ def _peek_human_messages() -> list[dict[str, Any]]:
         return []
     if not isinstance(data, dict):
         return []
-    raw = data.get("messages") or []
-    return [m for m in raw if isinstance(m, dict)]
+    return [m for m in (data.get("messages") or []) if isinstance(m, dict)]
 
 
-def _make_cat_embed(from_agent: str, content: str) -> discord.Embed:
-    """为猫的回复创建带颜色/品种的 Embed。"""
-    color = CAT_COLORS.get(from_agent, 0x888888)
-    embed = discord.Embed(description=content[:4000], color=color)
-    label = _cat_full_label(from_agent)
-    embed.set_author(name=f"🐱 {label}")
-    return embed
-
-
-async def _send_webhook_as_cat(from_agent: str, content: str) -> bool:
-    """通过 Webhook 以猫的独立身份发消息。成功返回 True。"""
-    if not WEBHOOK_URL:
-        return False
-    try:
-        import aiohttp
-
-        display = _cat_display_name(from_agent)
-        breed = CAT_BREEDS.get(from_agent, "")
-        username = f"🐱 {display}" + (f"（{breed}）" if breed else "")
-        async with aiohttp.ClientSession() as session:
-            webhook = discord.Webhook.from_url(WEBHOOK_URL, session=session)
-            await webhook.send(content[:1900], username=username[:80])
-        return True
-    except Exception as e:
-        print(f"[webhook] 发送失败，回退到 embed：{e}", file=sys.stderr)
-        return False
-
-
-async def _poll_inbox_to_discord(
-    client: discord.Client, reply_channel_id: int | None
-) -> None:
-    if reply_channel_id is None:
+async def _poll_inbox_to_discord(bridge: discord.Client) -> None:
+    if _reply_channel_id is None:
         return
     for msg in _peek_human_messages():
         rid = str(msg.get("requestId") or msg.get("request_id") or "")
@@ -374,29 +446,14 @@ async def _poll_inbox_to_discord(
             rid = str(msg.get("timestamp", "")) + str(msg.get("content", ""))[:40]
         if rid in _seen_ids:
             continue
-
         from_agent = msg.get("from") or msg.get("from_agent") or "unknown"
         content = msg.get("content") or ""
-
-        ch = client.get_channel(reply_channel_id)
-        if ch is None:
-            try:
-                ch = await client.fetch_channel(reply_channel_id)
-            except Exception:
-                continue
-        if not isinstance(ch, (discord.TextChannel, discord.Thread)):
-            continue
-
-        sent = await _send_webhook_as_cat(from_agent, content)
-        if not sent:
-            embed = _make_cat_embed(from_agent, content)
-            await ch.send(embed=embed)
-
+        await _send_cat_message(from_agent, _reply_channel_id, content, bridge)
         _seen_ids.add(rid)
 
 
 # ---------------------------------------------------------------------------
-# 旁听猫猫内部对话（扫描所有 inbox 目录）
+# 旁听猫猫内部对话
 # ---------------------------------------------------------------------------
 
 
@@ -405,15 +462,12 @@ def _inboxes_base_dir() -> Path:
 
 
 def _scan_team_chat_files() -> list[dict[str, Any]]:
-    """扫描所有 inbox 目录，返回尚未见过的猫间消息。"""
     base = _inboxes_base_dir()
     if not base.is_dir():
         return []
-    new_messages: list[dict[str, Any]] = []
+    new_msgs: list[dict[str, Any]] = []
     for inbox_dir in base.iterdir():
-        if not inbox_dir.is_dir():
-            continue
-        if inbox_dir.name == HUMAN_INBOX:
+        if not inbox_dir.is_dir() or inbox_dir.name == HUMAN_INBOX:
             continue
         for msg_file in sorted(inbox_dir.glob("msg-*.json")):
             if msg_file.name in _seen_team_files:
@@ -422,15 +476,14 @@ def _scan_team_chat_files() -> list[dict[str, Any]]:
             try:
                 data = json.loads(msg_file.read_bytes())
                 data["_to_inbox"] = inbox_dir.name
-                new_messages.append(data)
+                new_msgs.append(data)
             except Exception:
                 continue
-    new_messages.sort(key=lambda m: m.get("timestamp", ""))
-    return new_messages
+    new_msgs.sort(key=lambda m: m.get("timestamp", ""))
+    return new_msgs
 
 
 def _inbox_name_to_display(inbox_name: str) -> str:
-    """将 inbox 目录名（可能带 user_ 前缀）映射回中文显示名。"""
     if inbox_name in AGENT_DISPLAY:
         return AGENT_DISPLAY[inbox_name]
     for agent_id, display in AGENT_DISPLAY.items():
@@ -439,86 +492,89 @@ def _inbox_name_to_display(inbox_name: str) -> str:
     return inbox_name
 
 
-def _make_team_chat_embed(
-    from_agent: str, to_inbox: str, content: str
-) -> discord.Embed:
-    """为猫间对话创建旁听 Embed（灰色系，与直接回复主人的区分开）。"""
-    from_name = _inbox_name_to_display(from_agent)
-    to_name = _inbox_name_to_display(to_inbox)
-    from_color = CAT_COLORS.get(from_agent, 0x888888)
-    embed = discord.Embed(description=content[:4000], color=from_color)
-    embed.set_author(name=f"💬 {from_name} → {to_name}")
-    return embed
+def _inbox_name_to_agent_id(inbox_name: str) -> str:
+    """inbox 目录名 → agent id（用于选对 bot 发送）。"""
+    if inbox_name in AGENT_DISPLAY:
+        return inbox_name
+    for agent_id in AGENT_DISPLAY:
+        if inbox_name.endswith(f"_{agent_id}"):
+            return agent_id
+    return inbox_name
 
 
-async def _poll_team_chat_to_discord(
-    client: discord.Client, reply_channel_id: int | None
-) -> None:
-    """扫描所有 inbox，把猫间对话转发到 Discord。"""
-    if not SHOW_TEAM_CHAT or reply_channel_id is None:
+async def _poll_team_chat_to_discord(bridge: discord.Client) -> None:
+    if not SHOW_TEAM_CHAT or _reply_channel_id is None:
         return
     loop = asyncio.get_running_loop()
     messages = await loop.run_in_executor(None, _scan_team_chat_files)
-
     for msg in messages:
         from_agent = msg.get("from") or msg.get("from_agent") or "?"
         to_inbox = msg.get("_to_inbox") or msg.get("to") or "?"
         content = msg.get("content") or ""
-        if not content:
+        if not content or from_agent == HUMAN_INBOX:
             continue
-        # 来自 discord-human 的消息已在频道里看到过，跳过
-        if from_agent == HUMAN_INBOX:
-            continue
+        from_name = _inbox_name_to_display(from_agent)
+        to_name = _inbox_name_to_display(to_inbox)
+        tagged = f"**💬 {from_name} → {to_name}**\n{content}"
 
-        ch = client.get_channel(reply_channel_id)
-        if ch is None:
-            try:
-                ch = await client.fetch_channel(reply_channel_id)
-            except Exception:
-                continue
-        if not isinstance(ch, (discord.TextChannel, discord.Thread)):
-            continue
-
-        embed = _make_team_chat_embed(from_agent, to_inbox, content)
-        await ch.send(embed=embed)
-
-
-# ---------------------------------------------------------------------------
-# 帮助命令：列出可用猫
-# ---------------------------------------------------------------------------
-
-
-def _build_cat_list_embed() -> discord.Embed:
-    embed = discord.Embed(
-        title="🐾 猫猫名册",
-        description="用 `!@猫名 消息` 和指定的猫聊天",
-        color=0xFFA500,
-    )
-    for alias, agent_id in AGENT_ALIASES.items():
-        breed = CAT_BREEDS.get(agent_id, "")
-        embed.add_field(name=f"@{alias}", value=breed or agent_id, inline=True)
-    embed.set_footer(text="示例：!@美丽喵 首页做得怎么样了？\n不指定猫名则默认发给领队")
-    return embed
+        # 用发件猫的 bot 发，如果有的话
+        from_id = _inbox_name_to_agent_id(from_agent)
+        if from_id in CAT_TOKENS:
+            await _send_as_cat_bot(from_id, _reply_channel_id, tagged[:2000])
+        else:
+            color = CAT_COLORS.get(from_id, 0x888888)
+            avatar = _cat_avatar_url(from_id)
+            embed = discord.Embed(description=content[:4000], color=color)
+            embed.set_author(name=f"💬 {from_name} → {to_name}", icon_url=avatar)
+            ch = bridge.get_channel(_reply_channel_id)
+            if ch and isinstance(ch, (discord.TextChannel, discord.Thread)):
+                await ch.send(embed=embed)
 
 
 # ---------------------------------------------------------------------------
-# Discord Client
+# 猫 Bot Client（每只猫一个，负责接收 @mention）
 # ---------------------------------------------------------------------------
 
 
-def _strip_prefix(content: str) -> str | None:
-    if PREFIX:
-        if not content.startswith(PREFIX):
-            return None
-        return content[len(PREFIX) :].strip()
-    return content.strip() or None
+class CatBotClient(discord.Client):
+    """独立猫 bot，监听 @自己 的消息并转发到 inbox。"""
+
+    def __init__(self, agent_id: str, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.agent_id = agent_id
+
+    async def on_ready(self) -> None:
+        if self.user:
+            _bot_user_to_agent[self.user.id] = self.agent_id
+            name = _cat_display_name(self.agent_id)
+            print(f"[cat-bot] {name} 在线 (id={self.user.id})")
+
+    async def on_message(self, message: discord.Message) -> None:
+        if message.author.bot:
+            return
+        if CHANNEL_IDS and message.channel.id not in CHANNEL_IDS:
+            return
+        if not self.user or self.user not in message.mentions:
+            return
+        global _reply_channel_id
+        _reply_channel_id = message.channel.id
+        body = message.content
+        if self.user:
+            body = body.replace(f"<@{self.user.id}>", "").replace(f"<@!{self.user.id}>", "").strip()
+        if not body:
+            body = "（主人似乎只是打了个招呼）"
+        await _forward_to_agent(
+            message.channel, str(message.author), body, self.agent_id
+        )
 
 
-class ClawTeamBridgeClient(discord.Client):
+# ---------------------------------------------------------------------------
+# 主桥接 Client（兜底 + 轮询）
+# ---------------------------------------------------------------------------
 
-    def __init__(self, *, intents: discord.Intents) -> None:
-        super().__init__(intents=intents)
-        self._reply_channel_id: int | None = min(CHANNEL_IDS) if CHANNEL_IDS else None
+
+class BridgeClient(discord.Client):
+    """主桥接 bot：轮询 inbox、处理 ! 前缀命令、兜底转发。"""
 
     async def setup_hook(self) -> None:
         asyncio.create_task(self._poll_human_worker())
@@ -529,7 +585,7 @@ class ClawTeamBridgeClient(discord.Client):
         await self.wait_until_ready()
         while not self.is_closed():
             try:
-                await _poll_inbox_to_discord(self, self._reply_channel_id)
+                await _poll_inbox_to_discord(self)
             except Exception as e:
                 print(f"[poll] {e}", file=sys.stderr)
             await asyncio.sleep(POLL_SECONDS)
@@ -538,65 +594,96 @@ class ClawTeamBridgeClient(discord.Client):
         await self.wait_until_ready()
         while not self.is_closed():
             try:
-                await _poll_team_chat_to_discord(self, self._reply_channel_id)
+                await _poll_team_chat_to_discord(self)
             except Exception as e:
                 print(f"[team-chat] {e}", file=sys.stderr)
             await asyncio.sleep(TEAM_CHAT_POLL_SECONDS)
 
     async def on_ready(self) -> None:
         cats = ", ".join(AGENT_ALIASES.keys())
-        print(f"Bridge 已登录 {self.user} | team={TEAM} leader={LEADER}")
-        print(f"[bridge] 可用猫猫：{cats}")
-        if WEBHOOK_URL:
-            print("[bridge] Webhook 已启用 — 每只猫有独立显示身份")
+        bot_cats = [_cat_display_name(a) for a in CAT_TOKENS]
+        print(f"Bridge 已登录 {self.user} | team={TEAM}")
+        print(f"[bridge] 全部猫猫：{cats}")
+        if bot_cats:
+            print(f"[bridge] 独立 bot 在线：{', '.join(bot_cats)}")
+            no_bot = [v for k, v in AGENT_ALIASES.items() if AGENT_ALIASES[k] not in CAT_TOKENS]
+            if no_bot:
+                print(f"[bridge] 无独立 bot（用 webhook/embed 兜底）：{', '.join(_cat_display_name(a) for a in no_bot)}")
         else:
-            print("[bridge] 未设 DISCORD_WEBHOOK_URL — 用 Embed 区分猫（也很好看）")
+            print("[bridge] 未配置猫独立 bot token — 用 !前缀 + webhook/embed 模式")
         if SHOW_TEAM_CHAT:
-            print("[bridge] 旁听模式已开启 — 猫猫之间的对话也会显示在 Discord")
-        else:
-            print("[bridge] 旁听模式关闭 — 只显示猫对主人说的话")
+            print("[bridge] 旁听模式开启")
         dd = _effective_data_dir()
-        print(f"[bridge] CLAWTEAM_DATA_DIR：{dd}", file=sys.stderr)
-        tcfg = _team_config_path()
-        if not tcfg.is_file():
-            print(
-                f"[bridge] 警告：未找到 {tcfg}（队名或数据目录可能不对）",
-                file=sys.stderr,
-            )
-        if PREFIX:
-            print(f"用法：{PREFIX}@猫名 消息  |  {PREFIX}喵 查看名册  （前缀：{PREFIX!r}）")
-        else:
-            print("未设 PREFIX — 整句转发（建议限制 BRIDGE_CHANNEL_IDS）")
+        print(f"[bridge] data dir：{dd}", file=sys.stderr)
+        print("用法：直接 @猫的bot 说话，或用 !/@猫名 消息，或 !喵 查看名册")
 
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot:
             return
         if CHANNEL_IDS and message.channel.id not in CHANNEL_IDS:
             return
-        body = _strip_prefix(message.content)
+
+        global _reply_channel_id
+        _reply_channel_id = message.channel.id
+
+        # 如果 @了某只猫 bot，由那只猫的 CatBotClient 处理，这里不重复
+        if _mention_to_agent(message):
+            return
+
+        # ! / ！ 前缀模式（兜底）
+        body: str | None = None
+        for p in ("!", "！"):
+            if message.content.startswith(p):
+                body = message.content[len(p):].strip()
+                break
         if body is None:
             return
 
-        self._reply_channel_id = message.channel.id
-
-        # 帮助命令
         if body.strip() in ("喵", "猫", "help", "?", "？", "名册"):
-            await message.channel.send(embed=_build_cat_list_embed())
+            embed = discord.Embed(
+                title="🐾 猫猫名册",
+                description="直接 **@猫的bot** 说话，或用 `!@猫名 消息`",
+                color=0xFFA500,
+            )
+            for alias, agent_id in AGENT_ALIASES.items():
+                breed = CAT_BREEDS.get(agent_id, "")
+                has_bot = "✅ 在线" if agent_id in CAT_TOKENS else "📨 !前缀"
+                embed.add_field(name=alias, value=f"{breed}\n{has_bot}", inline=True)
+            await message.channel.send(embed=embed)
             return
 
-        # 解析目标猫 + 转发
-        target_agent, cleaned_body = _parse_target_and_body(body)
-        if not cleaned_body:
-            cleaned_body = "（主人似乎只是打了个招呼）"
-
-        await _forward_to_agent(
-            message.channel, str(message.author), cleaned_body, target_agent
-        )
+        target, cleaned = _parse_text_target(body)
+        if not cleaned:
+            cleaned = "（主人似乎只是打了个招呼）"
+        await _forward_to_agent(message.channel, str(message.author), cleaned, target)
 
 
 # ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
+
+
+async def _run_all() -> None:
+    """启动主桥接 + 所有猫 bot。"""
+    intents = discord.Intents.default()
+    intents.message_content = True
+    intents.members = True
+
+    tasks: list[asyncio.Task[None]] = []
+
+    # 启动每只猫的独立 bot
+    for agent_id, token in CAT_TOKENS.items():
+        cat_intents = discord.Intents.default()
+        cat_intents.message_content = True
+        client = CatBotClient(agent_id, intents=cat_intents)
+        _cat_clients[agent_id] = client
+        tasks.append(asyncio.create_task(client.start(token)))  # type: ignore[arg-type]
+
+    # 启动主桥接 bot
+    bridge = BridgeClient(intents=intents)
+    tasks.append(asyncio.create_task(bridge.start(TOKEN)))  # type: ignore[arg-type]
+
+    await asyncio.gather(*tasks)
 
 
 def main() -> None:
@@ -606,11 +693,16 @@ def main() -> None:
     if not shutil.which(CLAWTEAM_CMD):
         _die(f"找不到 {CLAWTEAM_CMD!r}：请安装 ClawTeam 并加入 PATH。")
 
-    intents = discord.Intents.default()
-    intents.message_content = True
-    client = ClawTeamBridgeClient(intents=intents)
+    cat_count = len(CAT_TOKENS)
+    if cat_count:
+        names = ", ".join(_cat_display_name(a) for a in CAT_TOKENS)
+        print(f"[启动] {cat_count} 只猫有独立 bot：{names}")
+    else:
+        print("[启动] 未配置猫独立 bot token，使用 !前缀 + webhook/embed 模式")
+    print(f"[启动] 主桥接 bot 正在连接...")
+
     try:
-        client.run(TOKEN)  # type: ignore[arg-type]
+        asyncio.run(_run_all())
     except KeyboardInterrupt:
         print("已退出。")
 
