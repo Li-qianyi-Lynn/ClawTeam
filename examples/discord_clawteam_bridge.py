@@ -460,36 +460,33 @@ async def _send_cat_message(
 # ---------------------------------------------------------------------------
 
 
-def _receive_human_messages() -> list[dict[str, Any]]:
-    """Consume messages from the discord-human inbox.
+def _read_and_consume_human_inbox() -> list[dict[str, Any]]:
+    """Read and delete messages from the discord-human inbox directory.
 
-    Uses 'inbox receive' instead of 'peek' because peek has a hard limit
-    of 10 messages and never clears old ones — once the inbox grows past
-    10 entries, new messages are silently invisible.  The bridge is the
-    sole consumer of this inbox so consume-on-read is safe; all messages
-    are also persisted in the event log for the board dashboard.
+    Reads files directly instead of shelling out to `clawteam` CLI,
+    which avoids subprocess overhead, limit issues, and env-var pitfalls.
+    Messages are also in the persistent event log so the board is not affected.
     """
-    global _peek_warned
-    try:
-        data = _run_clawteam_json(
-            ["inbox", "receive", TEAM or "", "--agent", HUMAN_INBOX, "--limit", "50"]
-        )
-    except Exception as e:
-        if not _peek_warned:
-            print(f"[poll] inbox receive 失败：{e}", file=sys.stderr)
-            _peek_warned = True
+    inbox = _effective_data_dir() / "teams" / (TEAM or "") / "inboxes" / HUMAN_INBOX
+    if not inbox.is_dir():
         return []
-    if isinstance(data, list):
-        return [m for m in data if isinstance(m, dict)]
-    if isinstance(data, dict):
-        return [m for m in (data.get("messages") or []) if isinstance(m, dict)]
-    return []
+    messages: list[dict[str, Any]] = []
+    for msg_file in sorted(inbox.glob("msg-*.json")):
+        try:
+            data = json.loads(msg_file.read_bytes())
+            messages.append(data)
+            msg_file.unlink(missing_ok=True)
+        except Exception as e:
+            print(f"[poll] 读取 {msg_file.name} 失败：{e}", file=sys.stderr)
+    return messages
 
 
 async def _poll_inbox_to_discord(bridge: discord.Client) -> None:
     if _reply_channel_id is None:
         return
-    for msg in _receive_human_messages():
+    loop = asyncio.get_running_loop()
+    messages = await loop.run_in_executor(None, _read_and_consume_human_inbox)
+    for msg in messages:
         rid = str(msg.get("requestId") or msg.get("request_id") or "")
         if not rid:
             rid = str(msg.get("timestamp", "")) + str(msg.get("content", ""))[:40]
@@ -497,8 +494,11 @@ async def _poll_inbox_to_discord(bridge: discord.Client) -> None:
             continue
         from_agent = msg.get("from") or msg.get("from_agent") or "unknown"
         content = msg.get("content") or ""
+        if not content:
+            continue
         await _send_cat_message(from_agent, _reply_channel_id, content, bridge)
         _seen_ids.add(rid)
+        print(f"[poll] → Discord: {from_agent}: {content[:60]}...")
 
 
 # ---------------------------------------------------------------------------
