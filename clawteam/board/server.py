@@ -9,7 +9,7 @@ import urllib.request
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from clawteam.board.collector import BoardCollector
 
@@ -72,13 +72,13 @@ class BoardHandler(BaseHTTPRequestHandler):
         elif path == "/api/overview":
             self._serve_json(self.collector.collect_overview())
         elif path.startswith("/api/team/"):
-            team_name = path[len("/api/team/"):].strip("/")
+            team_name = unquote(path[len("/api/team/"):].strip("/"))
             if not team_name:
                 self.send_error(400, "Team name required")
                 return
             self._serve_team(team_name)
         elif path.startswith("/api/events/"):
-            team_name = path[len("/api/events/"):].strip("/")
+            team_name = unquote(path[len("/api/events/"):].strip("/"))
             if not team_name:
                 self.send_error(400, "Team name required")
                 return
@@ -121,7 +121,7 @@ class BoardHandler(BaseHTTPRequestHandler):
         if path.startswith("/api/team/") and path.endswith("/task"):
             parts = path.strip("/").split("/")
             if len(parts) == 4 and parts[3] == "task":
-                team_name = parts[2]
+                team_name = unquote(parts[2])
                 content_length = int(self.headers.get("Content-Length", 0))
                 body = self.rfile.read(content_length).decode("utf-8")
                 try:

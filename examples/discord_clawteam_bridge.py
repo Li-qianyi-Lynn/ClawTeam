@@ -116,6 +116,9 @@ NUDGE_TEXT = (
     "然后用 clawteam inbox send '{team}' discord-human '你的回复' 回复主人。"
 )
 
+QUIT_KEYWORDS = {"quit", "停止", "stop", "退出", "终止"}
+
+
 # ---------------------------------------------------------------------------
 # 环境变量
 # ---------------------------------------------------------------------------
@@ -284,6 +287,39 @@ def _parse_text_target(body: str) -> tuple[str, str]:
 # ---------------------------------------------------------------------------
 # Nudge
 # ---------------------------------------------------------------------------
+
+
+def _is_quit_command(text: str) -> bool:
+    """Check if the message is a quit/stop command from the owner."""
+    stripped = text.strip().lower()
+    return stripped in QUIT_KEYWORDS
+
+
+def _kill_team_tmux() -> bool:
+    """Kill the entire tmux session for the team, terminating all agents."""
+    session = _tmux_session_name()
+    try:
+        result = subprocess.run(
+            ["tmux", "kill-session", "-t", session],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            timeout=10,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
+def _notify_leader_quit() -> None:
+    """Send quit notification to the leader agent via inbox."""
+    try:
+        _run_clawteam_json([
+            "inbox", "send", TEAM or "", LEADER or "",
+            "🛑 紧急停止：主人在 Discord 下达了终止指令，立刻停止所有工作！",
+            "--from", HUMAN_INBOX,
+        ])
+    except Exception:
+        pass
 
 
 def _nudge_agent_tmux(agent_id: str) -> None:
@@ -563,9 +599,23 @@ class CatBotClient(discord.Client):
             body = body.replace(f"<@{self.user.id}>", "").replace(f"<@!{self.user.id}>", "").strip()
         if not body:
             body = "（主人似乎只是打了个招呼）"
+        if _is_quit_command(body):
+            await self._handle_quit(message.channel)
+            return
         await _forward_to_agent(
             message.channel, str(message.author), body, self.agent_id
         )
+
+    async def _handle_quit(self, channel: discord.abc.Messageable) -> None:
+        loop = asyncio.get_running_loop()
+        await channel.send("🛑 **收到停止指令！正在终止所有猫猫进程...**")
+        await loop.run_in_executor(None, _notify_leader_quit)
+        await asyncio.sleep(2)
+        killed = await loop.run_in_executor(None, _kill_team_tmux)
+        if killed:
+            await channel.send("✅ 全部猫猫已终止。团队 tmux 会话已关闭。")
+        else:
+            await channel.send("⚠️ tmux 会话关闭失败（可能已经不存在），请手动检查。")
 
 
 # ---------------------------------------------------------------------------
@@ -639,6 +689,10 @@ class BridgeClient(discord.Client):
         if body is None:
             return
 
+        if _is_quit_command(body):
+            await self._handle_quit(message.channel)
+            return
+
         if body.strip() in ("喵", "猫", "help", "?", "？", "名册"):
             embed = discord.Embed(
                 title="🐾 猫猫名册",
@@ -657,6 +711,18 @@ class BridgeClient(discord.Client):
             cleaned = "（主人似乎只是打了个招呼）"
         await _forward_to_agent(message.channel, str(message.author), cleaned, target)
 
+    async def _handle_quit(self, channel: discord.abc.Messageable) -> None:
+        """Handle quit/stop command: notify leader, kill all agents."""
+        loop = asyncio.get_running_loop()
+        await channel.send("🛑 **收到停止指令！正在终止所有猫猫进程...**")
+        await loop.run_in_executor(None, _notify_leader_quit)
+        await asyncio.sleep(2)
+        killed = await loop.run_in_executor(None, _kill_team_tmux)
+        if killed:
+            await channel.send("✅ 全部猫猫已终止。团队 tmux 会话已关闭。")
+        else:
+            await channel.send("⚠️ tmux 会话关闭失败（可能已经不存在），请手动检查。")
+
 
 # ---------------------------------------------------------------------------
 # main
@@ -667,7 +733,6 @@ async def _run_all() -> None:
     """启动主桥接 + 所有猫 bot。"""
     intents = discord.Intents.default()
     intents.message_content = True
-    intents.members = True
 
     tasks: list[asyncio.Task[None]] = []
 
