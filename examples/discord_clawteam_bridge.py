@@ -105,7 +105,10 @@ _TOKEN_ENV_MAP: dict[str, str] = {
 HUMAN_INBOX = "discord-human"
 POLL_SECONDS = 5.0
 TEAM_CHAT_POLL_SECONDS = 3.0
-BRIDGE_CHANNEL_IDS: tuple[int, ...] = ()
+_raw_channel_ids = os.environ.get("DISCORD_CHANNEL_IDS", "").strip()
+BRIDGE_CHANNEL_IDS: tuple[int, ...] = tuple(
+    int(x) for x in _raw_channel_ids.split(",") if x.strip().isdigit()
+)
 CLAWTEAM_CMD = "clawteam"
 AUTO_NUDGE = True
 SHOW_TEAM_CHAT = True
