@@ -12,6 +12,9 @@
   CLAWTEAM_BRIDGE_TEAM
   CLAWTEAM_BRIDGE_LEADER
 
+若启动日志里出现 `teams/'猫猫…'/config.json`（路径里带引号），说明**变量值里误含了引号**（常见于从文档整段复制）。本脚本会自动剥掉首尾直引号/弯引号；也可改 export 为不含引号的队名，例如：
+  `export CLAWTEAM_BRIDGE_TEAM=猫猫拯救世界2.0`
+
 **强烈建议**再设（桥接里跑的 `clawteam` 与你在 SSH 里手敲的必须指向同一目录，否则「已发给」但猫永远收不到）：
   export CLAWTEAM_DATA_DIR="$HOME/.clawteam"
 
@@ -57,9 +60,26 @@ CLAWTEAM_CMD = "clawteam"
 # 环境变量（仅三样）
 # ---------------------------------------------------------------------------
 
+
+def _strip_env_wrapping_quotes(value: str | None) -> str | None:
+    """去掉队名/领队名里误带的整段引号（直引号或弯引号），避免路径出现 teams/'…'/。"""
+    if value is None:
+        return None
+    s = value.strip()
+    while len(s) >= 2:
+        a, b = s[0], s[-1]
+        straight = (a == b == "'") or (a == b == '"')
+        curly = (a == "\u2018" and b == "\u2019") or (a == "\u201c" and b == "\u201d")
+        if straight or curly:
+            s = s[1:-1].strip()
+            continue
+        break
+    return s
+
+
 TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
-TEAM = os.environ.get("CLAWTEAM_BRIDGE_TEAM")
-LEADER = os.environ.get("CLAWTEAM_BRIDGE_LEADER")
+TEAM = _strip_env_wrapping_quotes(os.environ.get("CLAWTEAM_BRIDGE_TEAM"))
+LEADER = _strip_env_wrapping_quotes(os.environ.get("CLAWTEAM_BRIDGE_LEADER"))
 
 CHANNEL_IDS: set[int] = set(BRIDGE_CHANNEL_IDS)
 _seen_ids: set[str] = set()
