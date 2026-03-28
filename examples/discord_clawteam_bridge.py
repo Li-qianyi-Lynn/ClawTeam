@@ -460,27 +460,36 @@ async def _send_cat_message(
 # ---------------------------------------------------------------------------
 
 
-def _peek_human_messages() -> list[dict[str, Any]]:
+def _receive_human_messages() -> list[dict[str, Any]]:
+    """Consume messages from the discord-human inbox.
+
+    Uses 'inbox receive' instead of 'peek' because peek has a hard limit
+    of 10 messages and never clears old ones — once the inbox grows past
+    10 entries, new messages are silently invisible.  The bridge is the
+    sole consumer of this inbox so consume-on-read is safe; all messages
+    are also persisted in the event log for the board dashboard.
+    """
     global _peek_warned
     try:
         data = _run_clawteam_json(
-            ["inbox", "peek", TEAM or "", "--agent", HUMAN_INBOX]
+            ["inbox", "receive", TEAM or "", "--agent", HUMAN_INBOX, "--limit", "50"]
         )
     except Exception as e:
         if not _peek_warned:
-            print(f"[poll] inbox peek 失败：{e}", file=sys.stderr)
+            print(f"[poll] inbox receive 失败：{e}", file=sys.stderr)
             _peek_warned = True
         return []
-    if not isinstance(data, dict):
-        return []
-    return [m for m in (data.get("messages") or []) if isinstance(m, dict)]
+    if isinstance(data, list):
+        return [m for m in data if isinstance(m, dict)]
+    if isinstance(data, dict):
+        return [m for m in (data.get("messages") or []) if isinstance(m, dict)]
+    return []
 
 
 async def _poll_inbox_to_discord(bridge: discord.Client) -> None:
     if _reply_channel_id is None:
         return
-    messages = _peek_human_messages()
-    for msg in messages:
+    for msg in _receive_human_messages():
         rid = str(msg.get("requestId") or msg.get("request_id") or "")
         if not rid:
             rid = str(msg.get("timestamp", "")) + str(msg.get("content", ""))[:40]
