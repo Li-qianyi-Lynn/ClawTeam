@@ -72,6 +72,19 @@ def _check_env() -> None:
         _die("未设置 CLAWTEAM_BRIDGE_LEADER。")
 
 
+def _leader_inbox_target() -> str:
+    """与 `clawteam inbox send` 一致：领队若有 user，真实目录为 ``user_zong-cai-miao``。"""
+    try:
+        from clawteam.team.manager import TeamManager
+
+        resolved = TeamManager.get_leader_inbox(TEAM or "")
+        if resolved:
+            return resolved
+    except Exception:
+        pass
+    return LEADER
+
+
 def _clawteam_exe() -> str:
     path = shutil.which(CLAWTEAM_CMD)
     return path or CLAWTEAM_CMD
@@ -101,12 +114,13 @@ async def _forward_to_leader(channel: discord.abc.Messageable, author: str, body
     loop = asyncio.get_running_loop()
 
     def _send() -> None:
+        to_inbox = _leader_inbox_target()
         _run_clawteam_json(
             [
                 "inbox",
                 "send",
                 TEAM,
-                LEADER,
+                to_inbox,
                 line,
                 "--from",
                 HUMAN_INBOX,
@@ -195,6 +209,16 @@ class ClawTeamBridgeClient(discord.Client):
 
     async def on_ready(self) -> None:
         print(f"Bridge 已登录 {self.user} | team={TEAM} leader={LEADER} human_inbox={HUMAN_INBOX}")
+        resolved = _leader_inbox_target()
+        if resolved != LEADER:
+            print(
+                f"[bridge] 领队投递收件箱为 {resolved!r}（与 CLAWTEAM_BRIDGE_LEADER={LEADER!r} 不同属正常，多用户团队为 user_逻辑名）",
+                file=sys.stderr,
+            )
+            print(
+                f"[bridge] 终端查看请用：clawteam inbox peek {TEAM!r} --agent {resolved!r}",
+                file=sys.stderr,
+            )
         if PREFIX:
             print(f"转发前缀：{PREFIX!r}（示例：{PREFIX}帮我把登录页做了）")
         else:
