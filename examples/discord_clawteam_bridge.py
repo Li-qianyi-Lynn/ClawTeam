@@ -493,28 +493,37 @@ async def _poll_inbox_to_discord(bridge: discord.Client) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _inboxes_base_dir() -> Path:
-    return _effective_data_dir() / "teams" / (TEAM or "") / "inboxes"
+def _events_dir() -> Path:
+    return _effective_data_dir() / "teams" / (TEAM or "") / "events"
 
 
 def _scan_team_chat_files() -> list[dict[str, Any]]:
-    base = _inboxes_base_dir()
+    """Scan the persistent event log instead of inbox directories.
+
+    Inbox files get consumed (renamed/deleted) when agents read them,
+    causing the bridge to miss messages in a race condition. The event
+    log (events/evt-*.json) is never consumed and contains all messages.
+    """
+    base = _events_dir()
     if not base.is_dir():
         return []
     new_msgs: list[dict[str, Any]] = []
-    for inbox_dir in base.iterdir():
-        if not inbox_dir.is_dir() or inbox_dir.name == HUMAN_INBOX:
+    for evt_file in sorted(base.glob("evt-*.json")):
+        if evt_file.name in _seen_team_files:
             continue
-        for msg_file in sorted(inbox_dir.glob("msg-*.json")):
-            if msg_file.name in _seen_team_files:
+        _seen_team_files.add(evt_file.name)
+        try:
+            data = json.loads(evt_file.read_bytes())
+            if not data.get("content"):
                 continue
-            _seen_team_files.add(msg_file.name)
-            try:
-                data = json.loads(msg_file.read_bytes())
-                data["_to_inbox"] = inbox_dir.name
-                new_msgs.append(data)
-            except Exception:
+            from_agent = data.get("from") or ""
+            to_agent = data.get("to") or ""
+            if from_agent == HUMAN_INBOX or to_agent == HUMAN_INBOX:
                 continue
+            data["_to_inbox"] = to_agent
+            new_msgs.append(data)
+        except Exception:
+            continue
     new_msgs.sort(key=lambda m: m.get("timestamp", ""))
     return new_msgs
 
