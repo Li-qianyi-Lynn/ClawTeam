@@ -56,6 +56,16 @@ BRIDGE_CHANNEL_IDS: tuple[int, ...] = ()
 # clawteam 可执行文件名（需在 PATH 中）
 CLAWTEAM_CMD = "clawteam"
 
+# 转发后自动向领队 tmux pane 注入提示，让 Claude 去收信回复（True = 开启）
+AUTO_NUDGE = True
+
+# 注入的提示语（Claude 看到后会执行 inbox receive + 回 discord-human）
+NUDGE_TEXT = (
+    "人类刚在 Discord 发了新消息。"
+    "请立刻执行 clawteam inbox receive '{team}' 查看，"
+    "然后用 clawteam inbox send '{team}' discord-human '你的回复' 回复人类。"
+)
+
 # ---------------------------------------------------------------------------
 # 环境变量（仅三样）
 # ---------------------------------------------------------------------------
@@ -132,6 +142,35 @@ def _leader_inbox_target() -> str:
     except Exception:
         pass
     return LEADER
+
+
+def _tmux_session_name() -> str:
+    """与 TmuxBackend.session_name 一致：队名里的 . 和 : 换成 _。"""
+    safe = (TEAM or "").replace(".", "_").replace(":", "_")
+    return f"clawteam-{safe}"
+
+
+def _nudge_leader_tmux() -> None:
+    """向领队的 tmux pane 注入一段话，催 Claude 去 inbox receive + 回复 discord-human。"""
+    if not AUTO_NUDGE:
+        return
+    session = _tmux_session_name()
+    target = f"{session}:{LEADER}"
+    text = NUDGE_TEXT.format(team=TEAM)
+    try:
+        subprocess.run(
+            ["tmux", "send-keys", "-t", target, text, "Enter"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=5,
+        )
+        print(f"[nudge] 已向 {target} 注入提示", file=sys.stderr)
+    except FileNotFoundError:
+        print("[nudge] tmux 未安装，跳过自动催", file=sys.stderr)
+    except subprocess.TimeoutExpired:
+        print(f"[nudge] tmux send-keys 超时 ({target})", file=sys.stderr)
+    except Exception as e:
+        print(f"[nudge] 失败：{e}", file=sys.stderr)
 
 
 def _clawteam_exe() -> str:
@@ -212,6 +251,15 @@ async def _forward_to_leader(channel: discord.abc.Messageable, author: str, body
         ok = await loop.run_in_executor(None, _verify)
     except Exception:
         ok = False
+
+    # 自动催：向领队 tmux pane 注入提示
+    def _nudge() -> None:
+        _nudge_leader_tmux()
+
+    try:
+        await loop.run_in_executor(None, _nudge)
+    except Exception:
+        pass
 
     data_dir = _effective_data_dir()
     await channel.send(f"已发给 **{LEADER}** 的 inbox（团队 `{TEAM}`）。")
