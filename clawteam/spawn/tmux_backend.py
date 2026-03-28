@@ -27,10 +27,21 @@ from clawteam.spawn.command_validation import validate_spawn_command
 _SHELL_ENV_KEY_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*\Z")
 
 
+def _tmux_safe_team_fragment(team_name: str) -> str:
+    """Make team name safe for tmux session/window targets.
+
+    tmux parses ``session:window.pane``; a dot in the session *name* can be
+    misread as ``window.pane`` (e.g. ``…2.0`` → window 2, pane 0), causing
+    errors like "can't specify pane here".
+    """
+    return team_name.replace(".", "_").replace(":", "_")
+
+
 class TmuxBackend(SpawnBackend):
     """Spawn agents in tmux windows for visual monitoring.
 
-    Each agent gets its own tmux window in a session named ``clawteam-{team}``.
+    Each agent gets its own tmux window in a session named ``clawteam-{sanitized_team}``
+    (``.`` and ``:`` in ``team`` are rewritten so tmux targets stay unambiguous).
     Agents run in interactive mode so their work is visible in the tmux pane.
     """
 
@@ -54,7 +65,7 @@ class TmuxBackend(SpawnBackend):
         if not shutil.which("tmux"):
             return "Error: tmux not installed"
 
-        session_name = f"clawteam-{team_name}"
+        session_name = TmuxBackend.session_name(team_name)
         clawteam_bin = resolve_clawteam_executable()
         env_vars = os.environ.copy()
         # Interactive CLIs like Codex refuse to start when TERM=dumb is inherited
@@ -240,7 +251,7 @@ class TmuxBackend(SpawnBackend):
 
     @staticmethod
     def session_name(team_name: str) -> str:
-        return f"clawteam-{team_name}"
+        return f"clawteam-{_tmux_safe_team_fragment(team_name)}"
 
     @staticmethod
     def tile_panes(team_name: str) -> str:

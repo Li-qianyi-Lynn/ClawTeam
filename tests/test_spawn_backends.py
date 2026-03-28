@@ -16,6 +16,12 @@ from clawteam.spawn.tmux_backend import (
 )
 
 
+def test_tmux_session_name_sanitizes_dots_for_tmux_targets():
+    """Dots in team names break tmux -t parsing (e.g. 2.0 → window.pane)."""
+    assert TmuxBackend.session_name("猫猫拯救世界2.0") == "clawteam-猫猫拯救世界2_0"
+    assert TmuxBackend.session_name("a:b.c") == "clawteam-a_b_c"
+
+
 class DummyProcess:
     def __init__(self, pid: int = 4321):
         self.pid = pid
