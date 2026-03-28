@@ -1,10 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
 import "./styles.css";
+import "./team.css";
+import TeamPage from "./components/team/TeamPage.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
+    <TeamPage />
   </React.StrictMode>
 );

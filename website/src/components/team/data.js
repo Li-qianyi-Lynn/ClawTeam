@@ -1,18 +1,11 @@
-// 猫猫天团成员数据
-import avatarZongCai from "../../../../examples/avatars/cat_avatar_zong-cai-miao.png";
-import avatarJiaGou from "../../../../examples/avatars/cat_avatar_jia-gou-miao.png";
-import avatarHouTai from "../../../../examples/avatars/cat_avatar_hou-tai-miao.png";
-import avatarMeiLi from "../../../../examples/avatars/cat_avatar_mei-li-miao.png";
-import avatarPingAn from "../../../../examples/avatars/cat_avatar_ping-an-miao.png";
-import avatarShuNi from "../../../../examples/avatars/cat_avatar_shu-ni-hong.png";
-
+// 猫猫天团成员数据（头像使用 public/avatars/ 静态路径）
 export const CAT_MEMBERS = [
   {
     id: "zong-cai-miao",
     name: "总裁喵",
     role: "团队领袖 · 首席协调官",
     emoji: "👑",
-    avatar: avatarZongCai,
+    avatar: "/avatars/cat_avatar_zong-cai-miao.png",
     bio: "掌控全局，爪到擒来。负责团队战略规划与任务协调，确保每只猫都能发挥最大战斗力。",
     tags: ["领导", "战略", "协调"],
     color: "#f97316",
@@ -22,7 +15,7 @@ export const CAT_MEMBERS = [
     name: "架构喵",
     role: "系统架构师",
     emoji: "🏗️",
-    avatar: avatarJiaGou,
+    avatar: "/avatars/cat_avatar_jia-gou-miao.png",
     bio: "奶牛花纹，思维缜密。设计系统蓝图，搭建稳固的技术骨架，让代码优雅地流动。",
     tags: ["架构设计", "React", "系统规划"],
     color: "#6366f1",
@@ -32,7 +25,7 @@ export const CAT_MEMBERS = [
     name: "后台喵",
     role: "后端工程师",
     emoji: "⚙️",
-    avatar: avatarHouTai,
+    avatar: "/avatars/cat_avatar_hou-tai-miao.png",
     bio: "默默耕耘在服务器的深处，用 API 和数据库构筑起整个系统的心脏。",
     tags: ["Python", "API", "数据库"],
     color: "#22c55e",
@@ -42,7 +35,7 @@ export const CAT_MEMBERS = [
     name: "美丽喵",
     role: "UI/UX 设计师",
     emoji: "✨",
-    avatar: avatarMeiLi,
+    avatar: "/avatars/cat_avatar_mei-li-miao.png",
     bio: "把美丽变成像素。将创意与审美融入每一个界面，让用户爱上每一次交互。",
     tags: ["UI设计", "动画", "用户体验"],
     color: "#ec4899",
@@ -52,7 +45,7 @@ export const CAT_MEMBERS = [
     name: "平安喵",
     role: "安全工程师",
     emoji: "🔒",
-    avatar: avatarPingAn,
+    avatar: "/avatars/cat_avatar_ping-an-miao.png",
     bio: "守护系统安全的铁壁。代码审查、漏洞扫描、高危命令先审后跑，一只都不能少。",
     tags: ["安全审计", "漏洞扫描", "代码审查"],
     color: "#3b82f6",
@@ -62,7 +55,7 @@ export const CAT_MEMBERS = [
     name: "数你红",
     role: "数据分析师",
     emoji: "📊",
-    avatar: avatarShuNi,
+    avatar: "/avatars/cat_avatar_shu-ni-hong.png",
     bio: "数据就是猫粮。从海量日志中挖掘洞察，用图表说话，让决策有据可依。",
     tags: ["数据分析", "可视化", "监控"],
     color: "#a855f7",
