@@ -479,7 +479,8 @@ def _peek_human_messages() -> list[dict[str, Any]]:
 async def _poll_inbox_to_discord(bridge: discord.Client) -> None:
     if _reply_channel_id is None:
         return
-    for msg in _peek_human_messages():
+    messages = _peek_human_messages()
+    for msg in messages:
         rid = str(msg.get("requestId") or msg.get("request_id") or "")
         if not rid:
             rid = str(msg.get("timestamp", "")) + str(msg.get("content", ""))[:40]
@@ -662,6 +663,7 @@ class BridgeClient(discord.Client):
             await asyncio.sleep(TEAM_CHAT_POLL_SECONDS)
 
     async def on_ready(self) -> None:
+        global _reply_channel_id
         cats = ", ".join(AGENT_ALIASES.keys())
         bot_cats = [_cat_display_name(a) for a in CAT_TOKENS]
         print(f"Bridge 已登录 {self.user} | team={TEAM}")
@@ -677,6 +679,22 @@ class BridgeClient(discord.Client):
             print("[bridge] 旁听模式开启")
         dd = _effective_data_dir()
         print(f"[bridge] data dir：{dd}", file=sys.stderr)
+
+        # Auto-discover reply channel so outbound messages work immediately
+        if _reply_channel_id is None:
+            for guild in self.guilds:
+                for ch in guild.text_channels:
+                    if ch.permissions_for(guild.me).send_messages:
+                        _reply_channel_id = ch.id
+                        print(f"[bridge] 自动发现回复频道：#{ch.name} ({ch.id})")
+                        break
+                if _reply_channel_id is not None:
+                    break
+        if _reply_channel_id is None:
+            print("[bridge] ⚠️ 未找到可用频道，等待主人先发一条消息...", file=sys.stderr)
+        else:
+            print(f"[bridge] 回复频道 ID：{_reply_channel_id}")
+
         print("用法：直接 @猫的bot 说话，或用 !/@猫名 消息，或 !喵 查看名册")
 
     async def on_message(self, message: discord.Message) -> None:
