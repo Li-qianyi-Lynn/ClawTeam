@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>猫猫拯救世界 — ClawTeam</title>
 
-  <!-- Reveal.js 5.1.0 -->
-  <link rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css"/>
-  <link rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css"
-    id="revealTheme"/>
+  <!-- Reveal.js 5.1.0 — local vendor (offline-safe) with CDN fallback -->
+  <link rel="stylesheet" href="vendor/reveal.css"
+        onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css'"/>
+  <link rel="stylesheet" href="vendor/theme-black.css" id="revealTheme"
+        onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css'"/>
 
   <!-- 猫猫主题 (总裁喵 + 美丽喵联手) -->
   <link rel="stylesheet" href="css/theme.css"/>
@@ -381,27 +380,41 @@
   </div><!-- /.slides -->
 </div><!-- /.reveal -->
 
-<!-- Custom interactions (v2) -->
-<script src="js/slides.js" defer></script>
-
-<!-- Reveal.js core -->
-<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<!-- Reveal.js core — local vendor first, CDN fallback -->
 <script>
-  Reveal.initialize({
-    hash:                true,
-    slideNumber:         'c/t',
-    transition:          'slide',
-    transitionSpeed:     'default',
-    backgroundTransition:'fade',
-    controls:            true,
-    controlsTutorial:    false,
-    progress:            true,
-    center:              true,
-    width:               1280,
-    height:              720,
-    margin:              0.04,
-    fragments:           true,
-  });
+  (function(){
+    var s=document.createElement('script');
+    s.src='vendor/reveal.js';
+    s.onerror=function(){
+      var fb=document.createElement('script');
+      fb.src='https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js';
+      fb.onload=function(){ initReveal(); };
+      document.head.appendChild(fb);
+    };
+    s.onload=function(){ initReveal(); };
+    document.head.appendChild(s);
+    function initReveal(){
+      Reveal.initialize({
+        hash:                true,
+        slideNumber:         'c/t',
+        transition:          'slide',
+        transitionSpeed:     'default',
+        backgroundTransition:'fade',
+        controls:            true,
+        controlsTutorial:    false,
+        progress:            true,
+        center:              true,
+        width:               1280,
+        height:              720,
+        margin:              0.04,
+        fragments:           true,
+      });
+      // Load custom interactions after Reveal is ready
+      var customScript = document.createElement('script');
+      customScript.src = 'js/slides.js';
+      document.body.appendChild(customScript);
+    }
+  })();
 </script>
 </body>
 </html>
