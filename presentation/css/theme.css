@@ -1,0 +1,520 @@
+/* ============================================================
+   猫猫拯救世界 — Reveal.js 自定义主题
+   负责人：美丽喵
+   架构喵出品骨架，美丽喵完善视觉细节
+   ============================================================ */
+
+/* ---------- Design Tokens ---------- */
+:root {
+  --color-primary:   #FF6B35;
+  --color-secondary: #4A90D9;
+  --color-accent:    #F7C948;
+  --color-dark:      #0F0F1A;
+  --color-surface:   #16213E;
+  --color-surface2:  #1a2a52;
+  --color-text:      #E8E8E8;
+  --color-muted:     #8892A4;
+  --color-success:   #22C55E;
+
+  --font-heading: 'ZCOOL KuaiLe', 'Noto Sans SC', 'PingFang SC', sans-serif;
+  --font-body:    'Noto Sans SC', 'PingFang SC', sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+
+  --slide-padding: 3rem;
+  --card-radius:   1rem;
+  --card-gap:      1.25rem;
+}
+
+/* ---------- Reveal overrides ---------- */
+.reveal {
+  font-family: var(--font-body);
+  font-size: 28px;
+  color: var(--color-text);
+}
+
+.reveal h1, .reveal h2, .reveal h3 {
+  font-family: var(--font-heading);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Shared slide layout ---------- */
+.slide-title {
+  font-size: 1.8rem;
+  color: var(--color-accent);
+  margin-bottom: 1.2rem;
+  text-align: center;
+  border-bottom: 2px solid var(--color-primary);
+  padding-bottom: 0.4rem;
+}
+
+/* ──────────────────────────────────────── */
+/* SLIDE 1: 封面 */
+/* ──────────────────────────────────────── */
+.slide-cover {
+  text-align: center;
+}
+
+.cover-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cover-badge {
+  display: inline-block;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 0.3rem 1rem;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.cover-title {
+  font-size: 3.2rem !important;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 !important;
+}
+
+.cover-subtitle {
+  font-size: 1rem;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.cover-members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.member-badge {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  color: var(--color-text);
+}
+
+.cover-date {
+  font-size: 0.65rem;
+  color: var(--color-muted);
+  margin-top: 0.5rem;
+}
+
+/* ──────────────────────────────────────── */
+/* SLIDE 2: 团队成员 */
+/* ──────────────────────────────────────── */
+.members-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--card-gap);
+  padding: 0 var(--slide-padding);
+}
+
+.member-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--card-radius);
+  padding: 1rem;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.member-card:hover {
+  border-color: var(--color-primary);
+}
+
+.member-emoji {
+  font-size: 2rem;
+  margin-bottom: 0.4rem;
+}
+
+.member-card h3 {
+  font-size: 0.9rem;
+  margin: 0 0 0.2rem;
+  color: var(--color-accent);
+}
+
+.member-role {
+  font-size: 0.6rem;
+  color: var(--color-secondary);
+  margin: 0 0 0.5rem;
+}
+
+.member-skills {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: center;
+}
+
+.member-skills li {
+  background: rgba(74,144,217,0.2);
+  border: 1px solid rgba(74,144,217,0.4);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.5rem;
+  color: var(--color-secondary);
+}
+
+.member-personality {
+  font-size: 0.55rem;
+  color: var(--color-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+/* ──────────────────────────────────────── */
+/* SLIDE 3: 产品思维 */
+/* ──────────────────────────────────────── */
+.product-flow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  padding: 0 1rem;
+}
+
+.flow-card {
+  background: rgba(255,255,255,0.05);
+  border-radius: var(--card-radius);
+  padding: 1.2rem 1rem;
+  flex: 1;
+  max-width: 280px;
+  text-align: center;
+}
+
+.flow-icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.4rem;
+}
+
+.flow-card h3 {
+  font-size: 0.85rem;
+  margin: 0 0 0.4rem;
+}
+
+.flow-card p {
+  font-size: 0.55rem;
+  color: var(--color-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.flow-problem  { border: 1px solid #EF4444; }
+.flow-insight  { border: 1px solid var(--color-accent); }
+.flow-solution { border: 1px solid var(--color-success); }
+
+.flow-arrow {
+  font-size: 1.5rem;
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+
+.product-metrics {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+}
+
+.metric-item {
+  text-align: center;
+}
+
+.metric-value {
+  display: block;
+  font-size: 2.4rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  color: var(--color-primary);
+}
+
+.metric-label {
+  font-size: 0.6rem;
+  color: var(--color-muted);
+}
+
+/* ──────────────────────────────────────── */
+/* SLIDE 4: 技术架构 */
+/* ──────────────────────────────────────── */
+.arch-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 0 1rem;
+  align-items: start;
+}
+
+.arch-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.arch-layer {
+  width: 100%;
+  border-radius: 0.6rem;
+  padding: 0.7rem 1rem;
+  text-align: center;
+}
+
+.layer-agents  { background: rgba(255,107,53,0.15);  border: 1px solid rgba(255,107,53,0.4); }
+.layer-core    { background: rgba(74,144,217,0.15);  border: 1px solid rgba(74,144,217,0.4); }
+.layer-infra   { background: rgba(247,201,72,0.15);  border: 1px solid rgba(247,201,72,0.4); }
+
+.layer-label {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.layer-items {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.layer-items span {
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.5rem;
+}
+
+.arch-arrow-down {
+  font-size: 0.55rem;
+  color: var(--color-muted);
+  text-align: center;
+  padding: 0.1rem 0;
+}
+
+.arch-decisions h3 {
+  font-size: 0.9rem;
+  color: var(--color-accent);
+  margin-bottom: 0.8rem;
+}
+
+.arch-decisions ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.arch-decisions li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.55rem;
+  border-left: 3px solid var(--color-primary);
+  padding-left: 0.7rem;
+}
+
+.arch-decisions li strong {
+  color: var(--color-text);
+  font-size: 0.6rem;
+}
+
+.arch-decisions li span {
+  color: var(--color-muted);
+}
+
+/* ──────────────────────────────────────── */
+/* SLIDE 5: 项目展示 */
+/* ──────────────────────────────────────── */
+.demo-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 0 1rem;
+  align-items: start;
+}
+
+.demo-features h3 {
+  font-size: 0.9rem;
+  color: var(--color-accent);
+  margin-bottom: 0.8rem;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.feature-list li {
+  font-size: 0.58rem;
+  color: var(--color-text);
+  padding: 0.4rem 0.6rem;
+  background: rgba(255,255,255,0.04);
+  border-radius: 0.4rem;
+  border-left: 3px solid var(--color-primary);
+}
+
+.screenshot-placeholder {
+  background: rgba(0,0,0,0.3);
+  border-radius: var(--card-radius);
+  border: 1px solid rgba(255,255,255,0.1);
+  overflow: hidden;
+}
+
+.terminal-mock {
+  font-family: var(--font-mono);
+}
+
+.terminal-mock .terminal-bar {
+  background: rgba(255,255,255,0.06);
+  padding: 0.5rem 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.55rem;
+  color: var(--color-muted);
+}
+
+.terminal-mock .terminal-bar span {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--color-muted);
+  display: inline-block;
+}
+
+.terminal-mock .terminal-bar span:nth-child(1) { background: #EF4444; }
+.terminal-mock .terminal-bar span:nth-child(2) { background: var(--color-accent); }
+.terminal-mock .terminal-bar span:nth-child(3) { background: var(--color-success); }
+
+.terminal-mock .terminal-body {
+  padding: 0.8rem 1rem;
+  font-size: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  color: var(--color-text);
+}
+
+.t-green  { color: var(--color-success); }
+.t-blue   { color: var(--color-secondary); }
+.t-yellow { color: var(--color-accent); }
+
+/* ──────────────────────────────────────── */
+/* SLIDE 6: 总结 */
+/* ──────────────────────────────────────── */
+.conclusion-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 0 1rem;
+  margin-bottom: 1rem;
+}
+
+.learnings h3 {
+  font-size: 0.9rem;
+  color: var(--color-accent);
+  margin-bottom: 0.8rem;
+}
+
+.learnings ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.learnings li {
+  font-size: 0.58rem;
+  padding: 0.5rem 0.7rem;
+  background: rgba(255,255,255,0.04);
+  border-radius: 0.4rem;
+  border-left: 3px solid var(--color-accent);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.cta-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255,107,53,0.08);
+  border: 1px solid rgba(255,107,53,0.3);
+  border-radius: var(--card-radius);
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.cta-tagline {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.cta-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.cta-btn {
+  display: inline-block;
+  background: var(--color-primary);
+  color: #fff;
+  padding: 0.4rem 1.2rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cta-install {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  background: rgba(0,0,0,0.3);
+  padding: 0.3rem 0.8rem;
+  border-radius: 0.4rem;
+  color: var(--color-accent);
+}
+
+.qa-prompt {
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--color-primary);
+  margin-top: 0.5rem;
+}
+
+/* ──────────────────────────────────────── */
+/* Progress bar override */
+/* ──────────────────────────────────────── */
+.reveal .progress {
+  color: var(--color-primary);
+}
+
+.reveal .controls {
+  color: var(--color-primary);
+}

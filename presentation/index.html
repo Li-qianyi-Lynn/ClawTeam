@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>猫猫拯救世界 — ClawTeam</title>
+
+  <!-- Reveal.js 5.1.0 (fixed version) -->
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css"/>
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css"
+    id="revealTheme"/>
+
+  <!-- Custom cat-team theme (美丽喵负责) -->
+  <link rel="stylesheet" href="css/theme.css"/>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ─────────────────────────────────────────────────── -->
+    <!-- SLIDE 1: 封面 -->
+    <!-- ─────────────────────────────────────────────────── -->
+    <section class="slide-cover" data-background-color="var(--color-dark)">
+      <div class="cover-content">
+        <div class="cover-badge">AI 多智能体协作平台</div>
+        <h1 class="cover-title">猫猫拯救世界</h1>
+        <p class="cover-subtitle">ClawTeam — 让任何 AI Agent 组队工作</p>
+        <div class="cover-members">
+          <!-- [薯你最红喵填写：团队角色徽章] -->
+          <span class="member-badge">👔 总裁喵</span>
+          <span class="member-badge">🏗️ 架构喵</span>
+          <span class="member-badge">🎨 美丽喵</span>
+          <span class="member-badge">✍️ 薯你最红喵</span>
+          <span class="member-badge">⚙️ 后台喵</span>
+          <span class="member-badge">🛡️ 平安喵</span>
+        </div>
+        <p class="cover-date">2026</p>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────── -->
+    <!-- SLIDE 2: 团队成员 -->
+    <!-- ─────────────────────────────────────────────────── -->
+    <section class="slide-members" data-background-color="var(--color-surface)">
+      <h2 class="slide-title">认识我们的团队</h2>
+      <div class="members-grid">
+        <!-- [薯你最红喵填写：每位成员的介绍] -->
+        <div class="member-card">
+          <div class="member-emoji">👔</div>
+          <h3>总裁喵</h3>
+          <p class="member-role">产品负责人 / 总协调</p>
+          <ul class="member-skills">
+            <li>产品规划</li>
+            <li>团队协调</li>
+            <li>决策拍板</li>
+          </ul>
+          <p class="member-personality">运筹帷幄，统揽全局</p>
+        </div>
+        <div class="member-card">
+          <div class="member-emoji">🏗️</div>
+          <h3>架构喵</h3>
+          <p class="member-role">软件架构师</p>
+          <ul class="member-skills">
+            <li>模块设计</li>
+            <li>接口契约</li>
+            <li>技术选型</li>
+          </ul>
+          <p class="member-personality">细心认真，把复杂拆成小块</p>
+        </div>
+        <div class="member-card">
+          <div class="member-emoji">🎨</div>
+          <h3>美丽喵</h3>
+          <p class="member-role">UI/UX 设计师</p>
+          <ul class="member-skills">
+            <li>视觉设计</li>
+            <li>交互体验</li>
+            <li>品牌风格</li>
+          </ul>
+          <p class="member-personality">审美在线，细节控</p>
+        </div>
+        <div class="member-card">
+          <div class="member-emoji">✍️</div>
+          <h3>薯你最红喵</h3>
+          <p class="member-role">产品文案 / 内容策略</p>
+          <ul class="member-skills">
+            <li>文案撰写</li>
+            <li>内容策略</li>
+            <li>话题标签</li>
+          </ul>
+          <p class="member-personality">一句话讲清楚产品价值</p>
+        </div>
+        <div class="member-card">
+          <div class="member-emoji">⚙️</div>
+          <h3>后台喵</h3>
+          <p class="member-role">后端工程师</p>
+          <ul class="member-skills">
+            <li>API 设计</li>
+            <li>数据存储</li>
+            <li>服务部署</li>
+          </ul>
+          <p class="member-personality">稳健可靠，不翻车</p>
+        </div>
+        <div class="member-card">
+          <div class="member-emoji">🛡️</div>
+          <h3>平安喵</h3>
+          <p class="member-role">安全工程师</p>
+          <ul class="member-skills">
+            <li>安全审计</li>
+            <li>高危命令管控</li>
+            <li>供应链检查</li>
+          </ul>
+          <p class="member-personality">守门神，一切高危走我这里</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────── -->
+    <!-- SLIDE 3: 产品思维 -->
+    <!-- ─────────────────────────────────────────────────── -->
+    <section class="slide-product" data-background-color="var(--color-dark)">
+      <h2 class="slide-title">产品思维</h2>
+      <div class="product-flow">
+        <!-- [薯你最红喵填写：核心洞察和解决方案] -->
+        <div class="flow-card flow-problem">
+          <div class="flow-icon">🔍</div>
+          <h3>问题</h3>
+          <p>AI 工具各自为战，Claude、Codex、Gemini 无法协同分工，大任务无法并行</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-card flow-insight">
+          <div class="flow-icon">💡</div>
+          <h3>洞察</h3>
+          <p>团队协作是 AI 生产力的下一个突破口——Agent 需要任务板、消息总线、冲突检测</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-card flow-solution">
+          <div class="flow-icon">🚀</div>
+          <h3>方案</h3>
+          <p>ClawTeam：统一调度 CLI + 共享任务板 + 跨 Agent inbox + Git Worktree 隔离</p>
+        </div>
+      </div>
+      <div class="product-metrics">
+        <!-- [薯你最红喵填写：核心数据] -->
+        <div class="metric-item">
+          <span class="metric-value">3x</span>
+          <span class="metric-label">任务并行度提升</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-value">6+</span>
+          <span class="metric-label">支持 AI 客户端</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-value">0</span>
+          <span class="metric-label">额外代码侵入</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────── -->
+    <!-- SLIDE 4: 技术架构 -->
+    <!-- ─────────────────────────────────────────────────── -->
+    <section class="slide-arch" data-background-color="var(--color-surface)">
+      <h2 class="slide-title">技术架构</h2>
+      <div class="arch-content">
+        <div class="arch-diagram">
+          <!-- 分层架构示意（美丽喵可换成图片） -->
+          <div class="arch-layer layer-agents">
+            <span class="layer-label">AI Agents</span>
+            <div class="layer-items">
+              <span>Claude Code</span><span>Codex</span><span>Gemini</span><span>Any CLI</span>
+            </div>
+          </div>
+          <div class="arch-arrow-down">↓ clawteam spawn</div>
+          <div class="arch-layer layer-core">
+            <span class="layer-label">ClawTeam Core</span>
+            <div class="layer-items">
+              <span>Task Board</span><span>Inbox</span><span>Lifecycle</span><span>Context</span>
+            </div>
+          </div>
+          <div class="arch-arrow-down">↓</div>
+          <div class="arch-layer layer-infra">
+            <span class="layer-label">Infrastructure</span>
+            <div class="layer-items">
+              <span>Git Worktrees</span><span>File-based Queue</span><span>tmux</span>
+            </div>
+          </div>
+        </div>
+        <div class="arch-decisions">
+          <h3>关键技术决策</h3>
+          <ul>
+            <li>
+              <strong>文件队列 vs 消息中间件</strong>
+              <span>→ 文件更简单，零依赖，支持离线</span>
+            </li>
+            <li>
+              <strong>Git Worktree 隔离</strong>
+              <span>→ 多 Agent 并行修改不冲突</span>
+            </li>
+            <li>
+              <strong>Provider-agnostic</strong>
+              <span>→ Profile + Preset 解耦 Agent 身份与运行时</span>
+            </li>
+            <li>
+              <strong>原子写入（tmp+rename）</strong>
+              <span>→ 防止并发下数据损坏</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────── -->
+    <!-- SLIDE 5: 项目展示 -->
+    <!-- ─────────────────────────────────────────────────── -->
+    <section class="slide-demo" data-background-color="var(--color-dark)">
+      <h2 class="slide-title">项目展示</h2>
+      <div class="demo-content">
+        <div class="demo-features">
+          <h3>核心能力</h3>
+          <ul class="feature-list">
+            <!-- [薯你最红喵填写：功能亮点] -->
+            <li>🗂️ 共享任务看板 — 阻塞关系、优先级、进度一目了然</li>
+            <li>📬 Inbox 消息系统 — Agent 间异步通讯，不依赖实时连接</li>
+            <li>🌿 Git Worktree 隔离 — 多 Agent 并行改代码，零冲突</li>
+            <li>📊 Board 实时监控 — TUI 看板 + 浏览器端双模式</li>
+            <li>🔌 Provider 无关 — Profile 一行切换模型/厂商</li>
+            <li>🛡️ 高危命令审批 — lifecycle 流程保障生产安全</li>
+          </ul>
+        </div>
+        <div class="demo-screenshot">
+          <!-- [美丽喵替换为实际截图] -->
+          <div class="screenshot-placeholder">
+            <div class="terminal-mock">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <em>clawteam board</em>
+              </div>
+              <div class="terminal-body">
+                <div>$ clawteam board show my-maomao</div>
+                <div class="t-green">✓ 总裁喵   completed</div>
+                <div class="t-blue">● 架构喵   in_progress</div>
+                <div class="t-blue">● 美丽喵   in_progress</div>
+                <div class="t-yellow">○ 后台喵   blocked</div>
+                <div class="t-yellow">○ 平安喵   blocked</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────── -->
+    <!-- SLIDE 6: 总结 & Q&A -->
+    <!-- ─────────────────────────────────────────────────── -->
+    <section class="slide-conclusion" data-background-color="var(--color-surface)">
+      <h2 class="slide-title">总结 & Q&A</h2>
+      <div class="conclusion-content">
+        <div class="learnings">
+          <h3>关键收获</h3>
+          <ul>
+            <!-- [薯你最红喵填写：核心洞察] -->
+            <li>多 Agent 协作需要「协议先行」—— 接口契约决定返工率</li>
+            <li>文件系统 > 消息队列 —— 简单才是最强的鲁棒性</li>
+            <li>产品思维 = 把 AI 能力映射到团队协作心智模型</li>
+          </ul>
+        </div>
+        <div class="cta-block">
+          <p class="cta-tagline">让 AI Agent 像真实团队一样工作</p>
+          <div class="cta-links">
+            <a class="cta-btn" href="https://github.com/HKUDS/ClawTeam" target="_blank">
+              GitHub →
+            </a>
+            <code class="cta-install">pip install clawteam</code>
+          </div>
+        </div>
+      </div>
+      <div class="qa-prompt">
+        <span>🐱 提问时间</span>
+      </div>
+    </section>
+
+  </div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<!-- Custom slide interactions -->
+<script src="js/slides.js" defer></script>
+
+<!-- Reveal.js init -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c/t',
+    transition: 'fade',
+    backgroundTransition: 'fade',
+    controls: true,
+    progress: true,
+    center: true,
+    width: 1280,
+    height: 720,
+    margin: 0.04,
+  });
+</script>
+</body>
+</html>
