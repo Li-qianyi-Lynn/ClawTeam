@@ -1,14 +1,51 @@
-/* ===== 猫猫天团专属样式 ===== */
+/* ===== 猫猫天团专属样式 =====
+ * 设计者：美丽喵 (mei-li-miao)
+ * 风格：暗色主题 + 紫粉渐变 + 微动效；专业但有趣
+ */
 
-/* --- 变量 --- */
+/* --- 设计令牌（Design Tokens） --- */
 :root {
-  --team-radius: 16px;
-  --team-card-bg: rgba(20, 16, 28, 0.85);
-  --team-card-border: rgba(255, 255, 255, 0.07);
+  /* Palette — 角色色带 */
+  --team-pink:    #ec4899;
+  --team-purple:  #a855f7;
+  --team-indigo:  #6366f1;
+  --team-gold:    #f59e0b;
+  --team-mint:    #22c55e;
+  --team-sky:     #3b82f6;
+
+  /* Surface — 卡面层级（暗色） */
+  --team-bg-base:    #0a0810;
+  --team-surface-1:  rgba(20, 16, 28, 0.85);
+  --team-surface-2:  rgba(28, 22, 40, 0.92);
+  --team-card-bg:    rgba(20, 16, 28, 0.85);
+  --team-card-border:       rgba(255, 255, 255, 0.07);
+  --team-card-border-hover: rgba(168, 85, 247, 0.45);
+
+  /* Ink — 文本颜色（继承自主站，此处做补充） */
+  --team-ink-accent: #c084fc;
+
+  /* Gradient — 渐变素材 */
+  --team-grad-primary: linear-gradient(135deg, #ec4899 0%, #a855f7 55%, #6366f1 100%);
+  --team-grad-warm:    linear-gradient(90deg, #f59e0b, #ec4899, #a855f7);
+  --team-grad-hero:    linear-gradient(135deg, #ffffff 0%, #f0abfc 40%, #e879f9 70%, #c026d3 100%);
+
+  /* Radius — 圆角刻度 */
+  --team-radius-sm: 10px;
+  --team-radius:    16px;
+  --team-radius-lg: 22px;
+
+  /* Shadow — 投影层级 */
+  --team-shadow-card:    0 12px 32px rgba(0, 0, 0, 0.3);
+  --team-shadow-card-lg: 0 24px 48px rgba(0, 0, 0, 0.4);
+  --team-shadow-glow:    0 0 30px rgba(168, 85, 247, 0.25);
+
+  /* Motion — 缓动曲线 */
+  --team-ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --team-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --team-duration:    280ms;
+
+  /* Layout — 节段间距 */
   --team-section-gap: 100px;
-  --team-pink: #ec4899;
-  --team-purple: #a855f7;
-  --team-gold: #f59e0b;
 }
 
 /* --- 页面容器 --- */
@@ -365,9 +402,9 @@
   align-items: center;
   gap: 14px;
   text-align: center;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.3s ease,
-              border-color 0.3s ease;
+  transition: transform var(--team-duration) var(--team-ease-spring),
+              box-shadow var(--team-duration) var(--team-ease-out),
+              border-color var(--team-duration) var(--team-ease-out);
   cursor: default;
   position: relative;
   overflow: hidden;
@@ -384,27 +421,42 @@
   height: 3px;
   background: linear-gradient(90deg, transparent, var(--cat-color, #a855f7), transparent);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--team-duration) var(--team-ease-out);
 }
 
-/* 卡片内部光晕 */
+/* 卡片内部光晕 + hover 斜向微光扫过 */
 .cat-card::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 40% at 50% 0%, color-mix(in srgb, var(--cat-color, #a855f7) 8%, transparent), transparent 70%);
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%, color-mix(in srgb, var(--cat-color, #a855f7) 10%, transparent), transparent 70%),
+    linear-gradient(115deg, transparent 35%, color-mix(in srgb, var(--cat-color, #a855f7) 10%, transparent) 50%, transparent 65%);
+  background-size: 100% 100%, 220% 220%;
+  background-position: 50% 0%, -120% 0%;
+  background-repeat: no-repeat;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--team-duration) var(--team-ease-out),
+              background-position 700ms var(--team-ease-out);
   pointer-events: none;
 }
 
 .cat-card:hover {
   transform: translateY(-8px) scale(1.01);
   box-shadow:
-    0 24px 48px rgba(0, 0, 0, 0.4),
+    var(--team-shadow-card-lg),
     0 0 0 1px var(--cat-color, var(--accent)),
-    0 0 30px color-mix(in srgb, var(--cat-color, var(--accent)) 20%, transparent);
+    0 0 30px color-mix(in srgb, var(--cat-color, var(--accent)) 22%, transparent);
   border-color: var(--cat-color, var(--accent));
+}
+
+.cat-card:hover::after {
+  background-position: 50% 0%, 120% 0%;
+}
+
+.cat-card:focus-visible {
+  outline: 2px solid var(--cat-color, var(--accent));
+  outline-offset: 3px;
 }
 
 .cat-card:hover::before {
@@ -568,16 +620,39 @@
   border: 1px solid var(--team-card-border);
   border-radius: var(--team-radius);
   padding: 26px;
-  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  transition: border-color var(--team-duration) var(--team-ease-out),
+              transform var(--team-duration) var(--team-ease-out),
+              box-shadow var(--team-duration) var(--team-ease-out);
   backdrop-filter: blur(8px);
   position: relative;
   overflow: hidden;
 }
 
+/* 顶部一道紫粉渐变细线，鼠标悬停时显现 */
+.capability-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: 2px;
+  background: var(--team-grad-primary);
+  opacity: 0;
+  transform: scaleX(0.4);
+  transform-origin: center;
+  transition: opacity var(--team-duration) var(--team-ease-out),
+              transform 400ms var(--team-ease-out);
+}
+
 .capability-card:hover {
-  border-color: rgba(168, 85, 247, 0.4);
+  border-color: var(--team-card-border-hover);
   transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(168, 85, 247, 0.1);
+  box-shadow: var(--team-shadow-card), 0 0 20px rgba(168, 85, 247, 0.1);
+}
+
+.capability-card:hover::before {
+  opacity: 1;
+  transform: scaleX(1);
 }
 
 .capability-icon {
@@ -690,6 +765,35 @@
 
 .team-footer-links a:hover {
   color: #c084fc;
+}
+
+/* --- 焦点可达性（键盘导航） --- */
+.team-page a:focus-visible,
+.team-page button:focus-visible {
+  outline: 2px solid var(--team-ink-accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.team-page .btn-primary:focus-visible {
+  outline-offset: 4px;
+}
+
+/* --- 自定义滚动条（细节加分） --- */
+.team-page ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.team-page ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.team-page ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(236, 72, 153, 0.35), rgba(168, 85, 247, 0.35));
+  border-radius: 999px;
+  border: 2px solid var(--team-bg-base);
+}
+.team-page ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(236, 72, 153, 0.55), rgba(168, 85, 247, 0.55));
 }
 
 /* --- 减少动效（无障碍） --- */
