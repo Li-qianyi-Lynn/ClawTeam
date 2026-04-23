@@ -25,6 +25,7 @@ class AgentDef(BaseModel):
     name: str
     type: str = "general-purpose"
     task: str = ""
+    task_file: str = ""
     command: list[str] | None = None
 
 
@@ -72,6 +73,19 @@ def render_task(task: str, **variables: str) -> str:
 # Loading
 # ---------------------------------------------------------------------------
 
+def _resolve_task(agent_data: dict, template_path: Path) -> dict:
+    """If task_file is set, read its content into task (task_file takes priority)."""
+    task_file = agent_data.get("task_file", "")
+    if not task_file:
+        return agent_data
+    p = Path(task_file).expanduser()
+    if not p.is_absolute():
+        p = template_path.parent / p
+    agent_data = dict(agent_data)
+    agent_data["task"] = p.read_text(encoding="utf-8")
+    return agent_data
+
+
 def _parse_toml(path: Path) -> TemplateDef:
     """Parse a TOML template file into a TemplateDef."""
     with open(path, "rb") as f:
@@ -80,11 +94,11 @@ def _parse_toml(path: Path) -> TemplateDef:
     tmpl = raw.get("template", {})
 
     # Parse leader
-    leader_data = tmpl.get("leader", {})
+    leader_data = _resolve_task(tmpl.get("leader", {}), path)
     leader = AgentDef(**leader_data)
 
     # Parse agents
-    agents = [AgentDef(**a) for a in tmpl.get("agents", [])]
+    agents = [AgentDef(**_resolve_task(a, path)) for a in tmpl.get("agents", [])]
 
     # Parse tasks
     tasks = [TaskDef(**t) for t in tmpl.get("tasks", [])]
