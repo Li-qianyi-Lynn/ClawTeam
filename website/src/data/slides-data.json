@@ -1,0 +1,147 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "generatedBy": "hou-tai-miao",
+    "note": "Static JSON snapshot — kept in sync with slides.js. Used by standalone Reveal.js build."
+  },
+  "team": {
+    "id": "my-maomao",
+    "name": "猫猫拯救天团",
+    "slogan": "从技术到产品，我们用爪子改变世界"
+  },
+  "members": [
+    {
+      "id": "zong-cai-miao",
+      "name": "总裁喵",
+      "nameEn": "CEO Cat",
+      "breed": "梨花猫",
+      "role": "领队 · 任务拆解 · 进度协调",
+      "emoji": "👑",
+      "color": "#f59e0b",
+      "badge": "领队",
+      "personality": "运筹帷幄，稳坐中军。把复杂项目拆成可执行的节点，确保每只猫都在正确的轨道上。",
+      "skills": ["项目管理", "团队协调", "需求拆解", "进度把控"]
+    },
+    {
+      "id": "mei-li-miao",
+      "name": "美丽喵",
+      "nameEn": "Beauty Cat",
+      "breed": "布偶猫",
+      "role": "前端 · UI/UX · 组件",
+      "emoji": "✨",
+      "color": "#ec4899",
+      "badge": "前端",
+      "personality": "像素级完美主义者。从配色到交互，每一帧都经过精心设计，让界面优雅得令人屏息。",
+      "skills": ["UI/UX设计", "React", "CSS动效", "设计系统"]
+    },
+    {
+      "id": "hou-tai-miao",
+      "name": "后台喵",
+      "nameEn": "Backend Cat",
+      "breed": "三花猫",
+      "role": "后端 · API · 数据库",
+      "emoji": "⚙️",
+      "color": "#10b981",
+      "badge": "后端",
+      "personality": "接口要稳、边界要清、日志可读。拒绝「差不多行了」——后台不背锅，数据有保证。",
+      "skills": ["API设计", "数据库", "性能优化", "鉴权安全"]
+    },
+    {
+      "id": "jia-gou-miao",
+      "name": "架构喵",
+      "nameEn": "Architect Cat",
+      "breed": "奶牛猫",
+      "role": "架构 · 接口契约 · 技术选型",
+      "emoji": "🏗️",
+      "color": "#6366f1",
+      "badge": "架构",
+      "personality": "系统全局思维，提前预见瓶颈。制定接口契约，让每个模块都清楚边界，协作无摩擦。",
+      "skills": ["系统设计", "技术选型", "接口契约", "架构评审"]
+    },
+    {
+      "id": "ping-an-miao",
+      "name": "平安喵",
+      "nameEn": "Safety Cat",
+      "breed": "大橘猫",
+      "role": "安全审查 · 高危命令把关",
+      "emoji": "🛡️",
+      "color": "#f97316",
+      "badge": "安全",
+      "personality": "所有高危操作都先过我这一关。curl|bash？不行。来路不明脚本？先查哈希。安全第一。",
+      "skills": ["安全审计", "漏洞分析", "权限管控", "密钥管理"]
+    },
+    {
+      "id": "shu-ni-hong",
+      "name": "薯你最红喵",
+      "nameEn": "XHS Copywriter Cat",
+      "breed": "金渐层",
+      "role": "小红书文案 · 话题标签 · 内容",
+      "emoji": "📝",
+      "color": "#ef4444",
+      "badge": "内容",
+      "personality": "让技术说人话，让产品被看见。文案既专业又有趣，数据、故事、情绪一个都不少。",
+      "skills": ["内容策划", "文案创作", "话题运营", "用户洞察"]
+    }
+  ],
+  "slides": [
+    {
+      "id": "cover",
+      "index": 0,
+      "type": "cover",
+      "title": "猫猫拯救天团",
+      "subtitle": "从技术到产品，我们用爪子改变世界",
+      "tagline": "六只猫 · 一个目标 · 无限可能"
+    },
+    {
+      "id": "team-intro",
+      "index": 1,
+      "type": "team-grid",
+      "title": "认识我们",
+      "subtitle": "六只各司其职的专业猫咪"
+    },
+    {
+      "id": "product-thinking",
+      "index": 2,
+      "type": "methodology",
+      "title": "产品思维",
+      "subtitle": "从用户需求到可交付成果"
+    },
+    {
+      "id": "tech-architecture",
+      "index": 3,
+      "type": "architecture",
+      "title": "技术架构",
+      "subtitle": "ClawTeam 框架的核心设计"
+    },
+    {
+      "id": "project-showcase",
+      "index": 4,
+      "type": "showcase",
+      "title": "项目成果",
+      "subtitle": "我们构建的不只是代码"
+    },
+    {
+      "id": "summary",
+      "index": 5,
+      "type": "summary",
+      "title": "我们能做什么",
+      "subtitle": "找我们，就是找一整支团队"
+    }
+  ],
+  "config": {
+    "slideCount": 6,
+    "animation": {
+      "slideTransition": "slide",
+      "transitionDuration": 600,
+      "autoplay": false
+    },
+    "navigation": {
+      "keyboardEnabled": true,
+      "clickEnabled": true,
+      "swipeEnabled": true,
+      "progressBar": true,
+      "slideNumbers": true,
+      "fullscreenToggle": true
+    }
+  }
+}
