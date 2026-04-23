@@ -168,4 +168,44 @@ TeamPage
 
 ---
 
-_文档版本：1.0 · 架构喵 (jia-gou-miao) · 2026-03-28_
+---
+
+## 7. team-intro 模块接口（新增，产品 Present 版）
+
+> 详细文档见 `src/team-intro/TEAM_INTRO_ARCHITECTURE.md`
+
+```
+website/src/team-intro/          # 自包含模块，CSS 前缀 ti-
+├── index.js                     # export default TeamIntroPage
+├── TeamIntroPage.jsx            # 页面根组件（无 Props）
+├── team-intro.css               # 模块样式（.ti-page 作用域）
+├── data.js                      # 统一数据层
+└── components/
+    ├── IntroNav.jsx             # 无 Props
+    ├── IntroHero.jsx            # 无 Props
+    ├── TeamSection.jsx          # 无 Props，消费 TEAM_MEMBERS
+    ├── MemberCard.jsx           # Props: { member: TeamMember }
+    ├── ProductThinkingSection.jsx # 无 Props，消费 PRODUCT_VALUES + PAIN_POINTS
+    ├── CollaborationSection.jsx # 无 Props，消费 WORKFLOW_STEPS
+    ├── TechStackSection.jsx     # 无 Props，消费 TECH_STACK
+    └── IntroFooter.jsx          # 无 Props
+```
+
+**数据导出（data.js）：**
+
+| 导出名 | 类型 | 消费方 |
+|--------|------|--------|
+| `TEAM_MEMBERS` | `TeamMember[]` | TeamSection → MemberCard |
+| `PRODUCT_VALUES` | `ProductValue[]` | ProductThinkingSection |
+| `PAIN_POINTS` | `PainPoint[]` | ProductThinkingSection |
+| `WORKFLOW_STEPS` | `WorkflowStep[]` | CollaborationSection |
+| `TECH_STACK` | `TechStackItem[]` | TechStackSection |
+
+**模块间约束：**
+- `team-intro/` 不导入任何来自 `components/team/` 的内容
+- CSS 前缀 `ti-` 与主站 `team-` 严格隔离
+- CSS 变量作用域限定在 `.ti-page` 选择器内
+
+---
+
+_文档版本：1.1 · 架构喵 (jia-gou-miao) · 2026-04-23（新增 team-intro 模块接口）_
