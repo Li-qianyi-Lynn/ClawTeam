@@ -14,7 +14,7 @@ export default function CollaborationSection() {
           <span className="ti-section-eyebrow">Workflow</span>
           <h2 className="ti-section-title">端到端协作流程</h2>
           <p className="ti-section-subtitle">
-            从需求输入到交付上线，每个环节清晰可见，人工介入精准可控
+            从需求输入到交付闭环，每个环节责任到位、进度透明，人工干预节点精准可控
           </p>
         </header>
 

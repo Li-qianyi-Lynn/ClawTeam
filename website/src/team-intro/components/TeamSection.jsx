@@ -12,9 +12,9 @@ export default function TeamSection() {
       <div className="ti-section-inner">
         <header className="ti-section-header">
           <span className="ti-section-eyebrow">Team</span>
-          <h2 className="ti-section-title">认识我们的团队</h2>
+          <h2 className="ti-section-title">认识猫猫天团</h2>
           <p className="ti-section-subtitle">
-            六只各司其职的专职 Agent，每只都是所在领域的顶尖专家
+            六名职责明确的专职 Agent，覆盖从架构设计到安全审查的完整交付链路
           </p>
         </header>
 

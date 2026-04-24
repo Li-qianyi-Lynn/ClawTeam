@@ -22,7 +22,7 @@ export default function IntroHero() {
 
       {/* 价值主张副标题 */}
       <p className="ti-hero-subtitle">
-        多 Agent 并行协作框架 · 让 AI 团队像真实团队一样高效运转
+        多 Agent 并行协作框架 · 让 AI 团队以真实工程团队的方式分工、协作、交付
       </p>
 
       {/* 核心指标摘要（三项关键数字，产品 present 必备） */}

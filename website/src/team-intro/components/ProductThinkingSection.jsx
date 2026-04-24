@@ -15,7 +15,7 @@ export default function ProductThinkingSection() {
           <span className="ti-section-eyebrow">Product Thinking</span>
           <h2 className="ti-section-title">产品思维</h2>
           <p className="ti-section-subtitle">
-            从用户痛点出发，以可量化的产品价值驱动设计决策
+            识别真实用户痛点，设计可量化的解法，用数据验证产品价值
           </p>
         </header>
 
