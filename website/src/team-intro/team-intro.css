@@ -517,6 +517,17 @@
   letter-spacing: -0.01em;
 }
 
+.ti-member-breed {
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ti-text-muted);
+  border: 1px solid var(--ti-border);
+  margin: 0.2rem 0 0;
+}
+
 .ti-member-role {
   font-size: 0.76rem;
   color: var(--ti-member-color);
@@ -531,6 +542,18 @@
   color: var(--ti-text-muted);
   line-height: 1.65;
   margin: 0;
+}
+
+.ti-member-personality {
+  font-size: 0.82rem;
+  color: var(--ti-text-muted);
+  font-style: italic;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0.4rem 0.6rem;
+  border-left: 2px solid var(--ti-member-color);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0 var(--ti-radius-sm) var(--ti-radius-sm) 0;
 }
 
 .ti-member-tags {

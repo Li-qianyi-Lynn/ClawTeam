@@ -1,18 +1,5 @@
-/**
- * 单成员卡片（原子组件）
- *
- * Props:
- *   member: {
- *     id: string, name: string, role: string,
- *     emoji: string, avatar: string, bio: string,
- *     tags: string[], color: string
- *   }
- *
- * 布局：圆形头像 + emoji 徽章 → 名字 + 角色 → 简介 → 技能标签
- * 交互：hover 上移 + 卡片边框着色（--ti-member-color）
- */
 export default function MemberCard({ member }) {
-  const { name, role, emoji, avatar, bio, tags, color } = member;
+  const { name, breed, role, emoji, avatar, bio, personality, skills, color } = member;
 
   return (
     <article
@@ -31,11 +18,15 @@ export default function MemberCard({ member }) {
 
       <div className="ti-member-info">
         <h3 className="ti-member-name">{name}</h3>
+        {breed && <span className="ti-member-breed">{breed}</span>}
         <p className="ti-member-role">{role}</p>
         <p className="ti-member-bio">{bio}</p>
-        <ul className="ti-member-tags" aria-label="技能标签">
-          {tags.map((tag) => (
-            <li key={tag} className="ti-member-tag">{tag}</li>
+        {personality && (
+          <p className="ti-member-personality">{personality}</p>
+        )}
+        <ul className="ti-member-tags" aria-label="技能">
+          {(skills ?? []).map((skill) => (
+            <li key={skill} className="ti-member-tag">{skill}</li>
           ))}
         </ul>
       </div>

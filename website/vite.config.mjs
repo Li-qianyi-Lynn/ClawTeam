@@ -13,6 +13,12 @@ export default defineConfig({
   build: {
     outDir: resolve(__dirname, "../docs"),
     emptyOutDir: false,
-    assetsDir: "site-assets"
-  }
+    assetsDir: "site-assets",
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, "index.html"),
+        "team-intro": resolve(__dirname, "team-intro.html"),
+      },
+    },
+  },
 });

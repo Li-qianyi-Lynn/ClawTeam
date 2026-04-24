@@ -256,7 +256,7 @@ function App() {
       <header className="header">
         <div className="shell header-inner">
           <a className="logo" href="#top"><img src={logo} alt="ClawTeam"/><strong>ClawTeam</strong></a>
-          <nav className="nav"><a href="#features">Features</a><a href="#templates">Templates</a><a href="#workflow">How it works</a><a href="#docs">Docs</a></nav>
+          <nav className="nav"><a href="#features">Features</a><a href="#templates">Templates</a><a href="#workflow">How it works</a><a href="#docs">Docs</a><a href="./team-intro.html">猫猫天团</a></nav>
           <a className="btn-primary" href="https://github.com/HKUDS/ClawTeam" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </header>
