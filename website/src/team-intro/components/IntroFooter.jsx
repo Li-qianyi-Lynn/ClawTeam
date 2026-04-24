@@ -16,7 +16,7 @@ export default function IntroFooter() {
         </p>
         <nav className="ti-footer-links" aria-label="Footer 导航">
           <a
-            href="https://github.com/HKUDS/ClawTeam"
+            href="https://github.com/Li-qianyi-Lynn/ClawTeam"
             target="_blank"
             rel="noreferrer"
           >

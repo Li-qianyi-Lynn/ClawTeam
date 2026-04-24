@@ -1,11 +1,5 @@
 import { WORKFLOW_STEPS } from "../data.js";
 
-/**
- * 协作流程区
- * 布局：横向步骤流（桌面）→ 纵向列表（手机）
- * 每步：序号 → 角色 Avatar + 名称 → 步骤说明 → 输出物
- * 箭头连接线：纯 CSS 实现，reduce-motion 兼容
- */
 export default function CollaborationSection() {
   return (
     <section className="ti-section ti-collab-section" id="workflow">
@@ -19,19 +13,14 @@ export default function CollaborationSection() {
         </header>
 
         <ol className="ti-workflow-list">
-          {WORKFLOW_STEPS.map((step, index) => (
+          {WORKFLOW_STEPS.map((step) => (
             <li key={step.id} className="ti-workflow-step">
-              {/* 步骤序号 */}
-              <div className="ti-step-num" aria-label={`第 ${step.step} 步`}>
-                {step.step}
+              <div className="ti-step-left">
+                <div className="ti-step-num" aria-label={`第 ${step.step} 步`}>
+                  {step.step}
+                </div>
               </div>
 
-              {/* 连接线（最后一步不渲染） */}
-              {index < WORKFLOW_STEPS.length - 1 && (
-                <div className="ti-step-connector" aria-hidden="true" />
-              )}
-
-              {/* 步骤内容 */}
               <div className="ti-step-content">
                 <div className="ti-step-actor">
                   <span className="ti-step-actor-emoji" aria-hidden="true">

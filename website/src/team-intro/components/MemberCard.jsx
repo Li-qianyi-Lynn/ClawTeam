@@ -1,19 +1,21 @@
 export default function MemberCard({ member }) {
-  const { name, breed, role, emoji, avatar, bio, personality, skills, color } = member;
+  const { name, breed, role, emoji, avatar, bio, personality, tags, color } = member;
 
   return (
     <article
       className="ti-member-card"
       style={{ "--ti-member-color": color }}
     >
-      <div className="ti-member-avatar-wrap">
-        <img
-          src={avatar}
-          alt={`${name} 头像`}
-          className="ti-member-avatar"
-          loading="lazy"
-        />
-        <span className="ti-member-emoji" aria-hidden="true">{emoji}</span>
+      <div className="ti-member-card-header">
+        <div className="ti-member-avatar-wrap">
+          <img
+            src={avatar}
+            alt={`${name} 头像`}
+            className="ti-member-avatar"
+            loading="lazy"
+          />
+          <span className="ti-member-emoji" aria-hidden="true">{emoji}</span>
+        </div>
       </div>
 
       <div className="ti-member-info">
@@ -24,11 +26,13 @@ export default function MemberCard({ member }) {
         {personality && (
           <p className="ti-member-personality">{personality}</p>
         )}
-        <ul className="ti-member-tags" aria-label="技能">
-          {(skills ?? []).map((skill) => (
-            <li key={skill} className="ti-member-tag">{skill}</li>
-          ))}
-        </ul>
+        {tags && tags.length > 0 && (
+          <ul className="ti-member-tags" aria-label="技能">
+            {tags.map((tag) => (
+              <li key={tag} className="ti-member-tag">{tag}</li>
+            ))}
+          </ul>
+        )}
       </div>
     </article>
   );
