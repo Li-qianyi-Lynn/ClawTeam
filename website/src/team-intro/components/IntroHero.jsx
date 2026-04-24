@@ -12,9 +12,11 @@ export default function IntroHero() {
         🐾
       </div>
 
+      <span className="ti-hero-badge">✦ Multi-Agent Collaboration ✦</span>
+
       {/* 主标题 */}
       <h1 className="ti-hero-title">
-        猫猫天团
+        <span>猫猫天团</span>
         <span className="ti-hero-title-en">ClawTeam</span>
       </h1>
 

@@ -10,6 +10,7 @@ export default function TechStackSection() {
     <section className="ti-section ti-tech-section" id="techstack">
       <div className="ti-section-inner">
         <header className="ti-section-header">
+          <span className="ti-section-eyebrow">Tech Stack</span>
           <h2 className="ti-section-title">技术栈简述</h2>
           <p className="ti-section-subtitle">
             精简选型，每一项技术都有明确的"为什么"——不炫技，只解决问题

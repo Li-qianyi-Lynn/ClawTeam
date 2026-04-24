@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./styles.css";
-import "./team.css";
-import TeamPage from "./components/team/TeamPage.jsx";
+import "./team-intro/team-intro.css";
+import TeamIntroPage from "./team-intro/index.js";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <TeamPage />
+    <TeamIntroPage />
   </React.StrictMode>
 );

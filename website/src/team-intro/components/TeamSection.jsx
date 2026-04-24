@@ -11,6 +11,7 @@ export default function TeamSection() {
     <section className="ti-section ti-team-section" id="team">
       <div className="ti-section-inner">
         <header className="ti-section-header">
+          <span className="ti-section-eyebrow">Team</span>
           <h2 className="ti-section-title">认识我们的团队</h2>
           <p className="ti-section-subtitle">
             六只各司其职的专职 Agent，每只都是所在领域的顶尖专家
